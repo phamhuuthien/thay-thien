@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thuật Toán Sắp Xếp Nổi Bọt</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1b2a;
+    --panel: #132236;
+    --accent: #00c9ff;
+    --accent2: #f7971e;
+    --swap: #ff4e6a;
+    --ok: #43e97b;
+    --sorted: #a8edea;
+    --text: #e8f4fd;
+    --muted: #6b8cae;
+    --bubble: #1e3a5f;
+    --bubble-border: #2e6fa3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(0,201,255,0.07) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 90%, rgba(247,151,30,0.06) 0%, transparent 60%);
+  }
+  h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 24px rgba(0,201,255,0.4);
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 28px;
+    align-items: center;
+  }
+  input[type=range] {
+    accent-color: var(--accent);
+    width: 120px;
+    cursor: pointer;
+  }
+  button {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, var(--accent), #0066cc);
+    color: #fff;
+    box-shadow: 0 0 18px rgba(0,201,255,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(0,201,255,0.5); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: var(--panel);
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+  .btn-secondary:hover { background: rgba(0,201,255,0.1); }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-reset {
+    background: var(--panel);
+    color: var(--accent2);
+    border: 1.5px solid var(--accent2);
+  }
+  .btn-reset:hover { background: rgba(247,151,30,0.1); }
+  .viz-area {
+    width: 100%;
+    max-width: 700px;
+    background: var(--panel);
+    border-radius: 20px;
+    border: 1px solid rgba(0,201,255,0.12);
+    padding: 28px 24px 24px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+  }
+  #array-display {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    height: 200px;
+    margin-bottom: 20px;
+  }
+  .bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .bar {
+    width: 48px;
+    border-radius: 10px 10px 4px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    transition: height 0.35s cubic-bezier(.34,1.56,.64,1), background 0.25s, box-shadow 0.25s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .bar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.13) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .bar-normal { background: linear-gradient(180deg, var(--bubble-border), var(--bubble)); border: 1.5px solid var(--bubble-border); }
+  .bar-comparing { background: linear-gradient(180deg, #f7b733, #f7971e); border: 1.5px solid #f7971e; box-shadow: 0 0 20px rgba(247,151,30,0.5); }
+  .bar-swapping { background: linear-gradient(180deg, #ff758c, #ff4e6a); border: 1.5px solid #ff4e6a; box-shadow: 0 0 24px rgba(255,78,106,0.6); }
+  .bar-sorted { background: linear-gradient(180deg, #43e97b, #38f9d7); border: 1.5px solid #38f9d7; box-shadow: 0 0 16px rgba(67,233,123,0.4); }
+  .bar-idx { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+  .info-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .info-card { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+  .info-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .info-card .value { font-family: 'Baloo 2', cursive; font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+  #status-msg { text-align: center; font-size: 0.92rem; font-weight: 600; min-height: 24px; color: var(--text); border-radius: 8px; padding: 4px 0; transition: color 0.3s; }
+  .legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .steps-log { width: 100%; max-width: 700px; background: var(--panel); border-radius: 16px; border: 1px solid rgba(0,201,255,0.08); padding: 16px 20px; max-height: 180px; overflow-y: auto; }
+  .steps-log h3 { font-family: 'Baloo 2', cursive; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .log-entry { font-size: 0.82rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; gap: 10px; align-items: baseline; color: #b0cce0; line-height: 1.4; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-step { font-family: 'Baloo 2', cursive; font-size: 0.78rem; color: var(--accent); font-weight: 700; min-width: 50px; white-space: nowrap; }
+  .log-swap { color: var(--swap); }
+  .log-ok { color: var(--ok); }
+  .log-done { color: var(--sorted); font-weight: 700; }
+  .steps-log::-webkit-scrollbar { width: 5px; }
+  .steps-log::-webkit-scrollbar-track { background: transparent; }
+  .steps-log::-webkit-scrollbar-thumb { background: rgba(0,201,255,0.2); border-radius: 99px; }
+  .speed-row { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+
+  /* Config panel */
+  .config-panel {
+    width: 100%;
+    max-width: 700px;
+    background: var(--panel);
+    border-radius: 16px;
+    border: 1px solid rgba(0,201,255,0.1);
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    /* align-items: flex-end; */
+  }
+  .config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 140px;
+  }
+  .config-group label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .config-group input[type=number] {
+    background: rgba(0,0,0,0.25);
+    border: 1.5px solid rgba(0,201,255,0.2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Baloo 2', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .config-group input[type=number]:focus { border-color: var(--accent); }
+  .config-group input[type=text] {
+    background: rgba(0,0,0,0.25);
+    border: 1.5px solid rgba(0,201,255,0.2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .config-group input[type=text]:focus { border-color: var(--accent); }
+  .config-group input[type=text]::placeholder { color: #3a5a7a; }
+  .order-toggle {
+    display: flex;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid rgba(0,201,255,0.2);
+  }
+  .order-btn {
+    flex: 1;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 0;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(0,0,0,0.25);
+    color: var(--muted);
+    transition: all 0.18s;
+    letter-spacing: 0.3px;
+  }
+  .order-btn.active-asc {
+    background: linear-gradient(90deg, #00c9ff22, #00c9ff44);
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  .order-btn.active-desc {
+    background: linear-gradient(90deg, #f7971e22, #f7971e44);
+    color: var(--accent2);
+    border-bottom: 2px solid var(--accent2);
+  }
+  .config-hint { font-size: 0.72rem; color: #3a5a7a; margin-top: 2px; }
+  .err-msg { font-size: 0.78rem; color: var(--swap); min-height: 18px; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🫧 Thuật Toán Sắp Xếp Nổi Bọt</h1>
+<p class="subtitle">Bubble Sort Visualization — Quan sát từng bước hoán đổi</p>
+
+<div class="config-panel">
+  <div class="config-group">
+    <label>Số phần tử (3–15)</label>
+    <input type="number" id="cfg-count" min="3" max="15" value="7" oninput="onCfgChange()">
+  </div>
+  <div class="config-group">
+    <label>Thứ tự sắp xếp</label>
+    <div class="order-toggle">
+      <button class="order-btn active-asc" id="btn-asc" onclick="setOrder('asc')">↑ Tăng dần</button>
+      <button class="order-btn" id="btn-desc" onclick="setOrder('desc')">↓ Giảm dần</button>
+    </div>
+  </div>
+  <div class="config-group" style="flex:2;min-width:200px;">
+    <label>Nhập mảng thủ công (tuỳ chọn)</label>
+    <input type="text" id="cfg-custom" placeholder="VD: 5, 3, 8, 1, 9, 2" oninput="onCustomInput()">
+    <div class="err-msg" id="cfg-err"></div>
+  </div>
+  <button class="btn-reset" style="align-self:flex-end;white-space:nowrap" onclick="applyConfig()">✅ Áp dụng</button>
+</div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center; align-items: center; margin-bottom: 18px;">
+    <div>
+      <button class="btn-reset" onclick="resetArray()">🔀 Mảng mới</button>
+      <button class="btn-primary" id="btn-play" onclick="playAll()">▶ Chạy tự động</button>
+      <button class="btn-secondary" id="btn-step" onclick="stepOnce()">⏭ Bước tiếp</button>
+    </div>
+    <div class="speed-row">
+      <span>🐢</span>
+      <input type="range" id="speed" min="100" max="1500" value="700" step="100">
+      <span>🐇</span>
+    </div>
+  </div>
+</div>
+
+<div class="viz-area">
+  <div id="array-display"></div>
+  <div class="info-panel">
+    <div class="info-card"><div class="label">Vòng lặp</div><div class="value" id="stat-pass">–</div></div>
+    <div class="info-card"><div class="label">So sánh</div><div class="value" id="stat-cmp">0</div></div>
+    <div class="info-card"><div class="label">Hoán đổi</div><div class="value" id="stat-swap">0</div></div>
+  </div>
+  <div id="status-msg">Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2e6fa3"></div>Chưa xét</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f7971e"></div>Đang so sánh</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff4e6a"></div>Hoán đổi</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#43e97b"></div>Đã sắp xếp</div>
+  </div>
+</div>
+
+<div class="steps-log">
+  <h3>📋 Nhật ký bước</h3>
+  <div id="log-body"></div>
+</div>
+
+<script>
+  let arr = [], steps = [], stepIdx = 0, playing = false, playTimer = null;
+  let cmpCount = 0, swapCount = 0;
+  let sortOrder = 'asc'; // 'asc' | 'desc'
+
+  function setOrder(o) {
+    sortOrder = o;
+    document.getElementById('btn-asc').className = 'order-btn' + (o === 'asc' ? ' active-asc' : '');
+    document.getElementById('btn-desc').className = 'order-btn' + (o === 'desc' ? ' active-desc' : '');
+  }
+
+  function onCfgChange() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+  }
+
+  function onCustomInput() {
+    document.getElementById('cfg-err').textContent = '';
+  }
+
+  function applyConfig() {
+    const customRaw = document.getElementById('cfg-custom').value.trim();
+    const errEl = document.getElementById('cfg-err');
+    if (customRaw) {
+      // Parse custom array
+      const parts = customRaw.split(/[\s,،]+/).filter(Boolean);
+      const nums = parts.map(Number);
+      if (nums.some(isNaN)) { errEl.textContent = '⚠ Chỉ nhập số, phân cách bằng dấu phẩy hoặc cách.'; return; }
+      if (nums.length < 2) { errEl.textContent = '⚠ Cần ít nhất 2 phần tử.'; return; }
+      if (nums.length > 15) { errEl.textContent = '⚠ Tối đa 15 phần tử.'; return; }
+      errEl.textContent = '';
+      initWith(nums);
+    } else {
+      const n = parseInt(document.getElementById('cfg-count').value);
+      if (isNaN(n) || n < 3 || n > 15) { errEl.textContent = '⚠ Số phần tử từ 3 đến 15.'; return; }
+      initWith(randArr(n, n <= 9 ? 9 : 99));
+    }
+  }
+
+  function randArr(n, maxVal) {
+    const a = [];
+    const pool = [...Array(maxVal).keys()].map(x => x + 1);
+    while (a.length < n) {
+      const idx = Math.floor(Math.random() * pool.length);
+      a.push(pool.splice(idx, 1)[0]);
+    }
+    return a;
+  }
+
+  function shouldSwap(a, b) {
+    return sortOrder === 'asc' ? a > b : a < b;
+  }
+
+  function buildSteps(original) {
+    // Duyet tu cuoi ve dau: j di tu n-1 xuong i+1
+    // Sau moi vong i, phan tu nho nhat (asc)/lon nhat (desc) noi len vi tri [i]
+    const a = [...original], steps = [], sorted = new Set(), n = a.length;
+    for (let i = 0; i < n - 1; i++) {
+      let swapped = false;
+      for (let j = n - 1; j > i; j--) {
+        steps.push({ type: 'compare', j: j-1, pass: i+1, arr: [...a], sorted: new Set(sorted) });
+        if (shouldSwap(a[j-1], a[j])) {
+          const old = [a[j-1], a[j]];
+          [a[j-1], a[j]] = [a[j], a[j-1]];
+          steps.push({ type: 'swap', j: j-1, pass: i+1, arr: [...a], sorted: new Set(sorted), old });
+          swapped = true;
+        } else {
+          const old = [a[j-1], a[j]];
+          steps.push({ type: 'noswap', j: j-1, pass: i+1, arr: [...a], sorted: new Set(sorted), old });
+        }
+      }
+      sorted.add(i);
+      steps.push({ type: 'sorted_pos', pos: i, pass: i+1, arr: [...a], sorted: new Set(sorted) });
+      if (!swapped) {
+        for (let k = i + 1; k < n; k++) sorted.add(k);
+        steps.push({ type: 'done', arr: [...a], sorted: new Set(sorted) });
+        return steps;
+      }
+    }
+    sorted.add(n - 1);
+    steps.push({ type: 'done', arr: [...a], sorted: new Set([...Array(n).keys()]) });
+    return steps;
+  }
+
+  function initWith(a) {
+    stopPlay();
+    arr = a;
+    steps = buildSteps(arr);
+    stepIdx = 0; cmpCount = 0; swapCount = 0;
+    renderBars(arr, new Set(), -1, '');
+    document.getElementById('status-msg').textContent = 'Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.';
+    document.getElementById('status-msg').style.color = '';
+    document.getElementById('log-body').innerHTML = '';
+    document.getElementById('btn-play').disabled = false;
+    document.getElementById('btn-step').disabled = false;
+    document.getElementById('stat-pass').textContent = '–';
+    document.getElementById('stat-cmp').textContent = '0';
+    document.getElementById('stat-swap').textContent = '0';
+  }
+
+  function resetArray() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+    applyConfig();
+  }
+
+  function renderBars(a, sorted, j, type) {
+    const display = document.getElementById('array-display');
+    const maxVal = Math.max(...a.map(Math.abs), 1);
+    const n = a.length;
+    const barW = Math.max(28, Math.min(52, Math.floor(580 / n) - 10));
+    const fontSize = barW < 36 ? '0.78rem' : '1.1rem';
+    display.innerHTML = '';
+    display.style.gap = Math.max(4, Math.min(10, Math.floor(400/n) - barW)) + 'px';
+    a.forEach((v, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = barW + 'px';
+      bar.style.fontSize = fontSize;
+      const heightRatio = Math.abs(v) / maxVal;
+      bar.style.height = (55 + heightRatio * 135) + 'px';
+      if (sorted.has(i)) bar.classList.add('bar-sorted');
+      else if (type === 'swap' && (i === j || i === j+1)) bar.classList.add('bar-swapping');
+      else if ((type === 'compare' || type === 'noswap') && (i === j || i === j+1)) bar.classList.add('bar-comparing');
+      else bar.classList.add('bar-normal');
+      bar.textContent = v;
+      const idx = document.createElement('div');
+      idx.className = 'bar-idx';
+      idx.textContent = i;
+      wrap.appendChild(bar);
+      wrap.appendChild(idx);
+      display.appendChild(wrap);
+    });
+  }
+
+  function logEntry(text, cls) {
+    const lb = document.getElementById('log-body');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    const stepEl = document.createElement('span');
+    stepEl.className = 'log-step';
+    stepEl.textContent = `#${stepIdx}`;
+    const textEl = document.createElement('span');
+    if (cls) textEl.className = cls;
+    textEl.textContent = text;
+    entry.appendChild(stepEl);
+    entry.appendChild(textEl);
+    lb.appendChild(entry);
+    lb.scrollTop = lb.scrollHeight;
+  }
+
+  const opSym = sortOrder === 'asc' ? '>' : '<';
+
+  function applyStep() {
+    if (stepIdx >= steps.length) return false;
+    const step = steps[stepIdx++];
+    const msg = document.getElementById('status-msg');
+    const sym = sortOrder === 'asc' ? '>' : '<';
+    const symOk = sortOrder === 'asc' ? '≤' : '≥';
+    if (step.type === 'compare') {
+      cmpCount++;
+      renderBars(step.arr, step.sorted, step.j, 'compare');
+      msg.textContent = `Vòng ${step.pass}: So sánh [${step.j}] và [${step.j+1}]: ${step.arr[step.j]} và ${step.arr[step.j+1]}`;
+      msg.style.color = '#f7971e';
+      logEntry(`Vòng ${step.pass} — So sánh arr[${step.j}]=${step.arr[step.j]} với arr[${step.j+1}]=${step.arr[step.j+1]}`);
+    } else if (step.type === 'swap') {
+      swapCount++;
+      renderBars(step.arr, step.sorted, step.j, 'swap');
+      msg.textContent = `${step.old[0]} ${sym} ${step.old[1]} → Hoán đổi! ✓`;
+      msg.style.color = '#ff4e6a';
+      logEntry(`  → ${step.old[0]} ${sym} ${step.old[1]}: HOÁN ĐỔI`, 'log-swap');
+    } else if (step.type === 'noswap') {
+      renderBars(step.arr, step.sorted, step.j, 'noswap');
+      msg.textContent = `${step.old[0]} ${symOk} ${step.old[1]} → Không hoán đổi`;
+      msg.style.color = '';
+      logEntry(`  → ${step.old[0]} ${symOk} ${step.old[1]}: giữ nguyên`, 'log-ok');
+    } else if (step.type === 'sorted_pos') {
+      renderBars(step.arr, step.sorted, -1, '');
+      const word = sortOrder === 'asc' ? 'nhỏ nhất' : 'lớn nhất';
+      msg.textContent = `✅ Vòng ${step.pass} xong — phần tử ${word} "nổi" lên vị trí đầu [${step.pos}]`;
+      msg.style.color = '#43e97b';
+      logEntry(`Vòng ${step.pass} hoàn tất — arr[${step.pos}] da dung cho`, 'log-ok');
+    } else if (step.type === 'done') {
+      renderBars(step.arr, step.sorted, -1, '');
+      const orderTxt = sortOrder === 'asc' ? 'tăng dần' : 'giảm dần';
+      msg.textContent = `🎉 Sắp xếp hoàn tất! Mảng đã được sắp xếp ${orderTxt}.`;
+      msg.style.color = '#a8edea';
+      logEntry(`🎉 HOÀN TẤT! Mảng đã sắp xếp ${orderTxt}.`, 'log-done');
+      document.getElementById('btn-play').disabled = true;
+      document.getElementById('btn-step').disabled = true;
+      document.getElementById('stat-pass').textContent = '✓';
+      document.getElementById('stat-cmp').textContent = cmpCount;
+      document.getElementById('stat-swap').textContent = swapCount;
+      return false;
+    }
+    document.getElementById('stat-cmp').textContent = cmpCount;
+    document.getElementById('stat-swap').textContent = swapCount;
+    if (step.pass) document.getElementById('stat-pass').textContent = step.pass;
+    return true;
+  }
+
+  function stepOnce() { stopPlay(); applyStep(); }
+
+  function playAll() {
+    if (playing) { stopPlay(); return; }
+    document.getElementById('btn-play').textContent = '⏸ Dừng';
+    playing = true;
+    function next() {
+      const cont = applyStep();
+      if (cont && playing) {
+        playTimer = setTimeout(next, 1600 - parseInt(document.getElementById('speed').value));
+      } else stopPlay(true);
+    }
+    next();
+  }
+
+  function stopPlay(done) {
+    playing = false;
+    clearTimeout(playTimer);
+    document.getElementById('btn-play').textContent = '▶ Chạy tự động';
+  }
+
+  // Init
+  initWith(randArr(7, 9));
+</script>
+</body>
+</html>
