@@ -1,12 +1,107 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Thầy Thiện - Dạy Thuật Toán</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      margin-bottom: 40px;
+      opacity: 0.9;
+    }
+
+    .card-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: white;
+      color: #333;
+      padding: 20px 30px;
+      border-radius: 12px;
+      width: 220px;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
-  <a href="bubble-sort.html">Bubble Sort</a>
-  <a href="selection-sort.html">Selection Sort</a>
+
+  <div class="container">
+    <h1>👨‍🏫 Thầy Thiện</h1>
+    <p class="subtitle">Chia sẻ kiến thức Thuật Toán & Lập Trình cho học sinh</p>
+
+    <div class="card-container">
+      <a class="card" href="bubble-sort.html">
+        <h2>Sắp xếp nổi bọt</h2>
+        <p>Thuật toán sắp xếp cơ bản, dễ hiểu cho người mới</p>
+      </a>
+
+      <a class="card" href="selection-sort.html">
+        <h2>Sắp xếp chọn</h2>
+        <p>Ý tưởng chọn phần tử nhỏ nhất qua từng bước</p>
+      </a>
+    </div>
+
+    <div class="footer">
+      © 2026 - Thầy Thiện | Dạy học bằng đam mê ❤️
+    </div>
+  </div>
+
 </body>
 </html>
+
