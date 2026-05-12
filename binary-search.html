@@ -1,11 +1,636 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thuật Toán Tìm Kiếm Nhị Phân</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1b2a;
+    --panel: #132236;
+    --accent: #34d399;
+    --accent2: #f7971e;
+    --text: #e8f4fd;
+    --muted: #6b8cae;
+    --bubble: #1e3a5f;
+    --bubble-border: #2e6fa3;
+
+    --clr-active: #34d399;
+    --clr-mid: #f59e0b;
+    --clr-left: #38bdf8;
+    --clr-right: #c084fc;
+    --clr-found: #43e97b;
+    --clr-elim: #1e3a5f;
+    --clr-swap: #ff4e6a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 12px;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(52,211,153,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 80%, rgba(192,132,252,0.07) 0%, transparent 55%);
+  }
+  h1 {
+    font-family: 'Baloo 2', cursive; font-size: 2rem; font-weight: 800;
+    color: var(--accent); letter-spacing: 1px; margin-bottom: 4px;
+    text-shadow: 0 0 24px rgba(52,211,153,0.4);
+  }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+
+  /* Config */
+  .config-panel {
+    width: 100%; max-width: 720px; background: var(--panel);
+    border-radius: 16px; border: 1px solid rgba(52,211,153,0.12);
+    padding: 18px 22px; margin-bottom: 18px;
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+  }
+  .config-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 130px; }
+  .config-group label { font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .config-group input {
+    background: rgba(0,0,0,0.25); border: 1.5px solid rgba(52,211,153,0.2);
+    border-radius: 10px; color: var(--text); font-family: 'Baloo 2', cursive;
+    font-size: 1rem; font-weight: 700; padding: 8px 12px; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  .config-group input:focus { border-color: var(--accent); }
+  .config-group input::placeholder { color: #3a5a7a; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 600; }
+  .err-msg { font-size: 0.78rem; color: #ff4e6a; min-height: 16px; margin-top: 2px; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; align-items: center; }
+  input[type=range] { accent-color: var(--accent); width: 120px; cursor: pointer; }
+  button {
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem;
+    padding: 9px 22px; border-radius: 999px; border: none; cursor: pointer; transition: all 0.18s;
+  }
+  .btn-primary { background: linear-gradient(90deg, var(--accent), #059669); color: #fff; box-shadow: 0 0 18px rgba(52,211,153,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(52,211,153,0.5); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary { background: var(--panel); color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn-secondary:hover { background: rgba(52,211,153,0.1); }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-reset { background: var(--panel); color: var(--accent2); border: 1.5px solid var(--accent2); }
+  .btn-reset:hover { background: rgba(247,151,30,0.1); }
+  .speed-row { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+
+  /* Viz */
+  .viz-area {
+    width: 100%; max-width: 720px; background: var(--panel);
+    border-radius: 20px; border: 1px solid rgba(52,211,153,0.13);
+    padding: 24px 22px; box-shadow: 0 8px 48px rgba(0,0,0,0.4); margin-bottom: 20px;
+  }
+
+  /* Target row */
+  .target-display {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-bottom: 20px;
+  }
+  .target-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .target-box {
+    font-family: 'Baloo 2', cursive; font-size: 1.4rem; font-weight: 800;
+    color: var(--accent); background: rgba(52,211,153,0.1);
+    border: 2px solid rgba(52,211,153,0.35); border-radius: 10px;
+    padding: 4px 20px; min-width: 64px; text-align: center;
+    box-shadow: 0 0 14px rgba(52,211,153,0.18);
+  }
+
+  /* Range indicator bar */
+  .range-bar-wrap {
+    position: relative; margin-bottom: 6px; height: 6px;
+    display: flex; align-items: center;
+  }
+  #range-track {
+    width: 100%; height: 4px; background: rgba(255,255,255,0.06);
+    border-radius: 99px; position: relative; overflow: visible;
+  }
+  #range-fill {
+    position: absolute; top: 0; height: 4px;
+    background: linear-gradient(90deg, var(--clr-left), var(--accent), var(--clr-right));
+    border-radius: 99px; transition: left 0.35s, width 0.35s;
+  }
+
+  /* Labels: L, mid, R above cells */
+  .labels-row {
+    display: flex; justify-content: center; align-items: flex-end;
+    margin-bottom: 4px; min-height: 26px;
+  }
+  .label-slot { display: flex; justify-content: center; align-items: flex-end; }
+  .lbl {
+    font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px;
+    border-radius: 4px; padding: 1px 5px; white-space: nowrap;
+  }
+  .lbl-L   { color: var(--clr-left);  background: rgba(56,189,248,0.15); }
+  .lbl-R   { color: var(--clr-right); background: rgba(192,132,252,0.15); }
+  .lbl-M   { color: var(--clr-mid);   background: rgba(245,158,11,0.18); }
+  .lbl-LM  { color: var(--clr-mid);   background: rgba(56,189,248,0.13); } /* L & M same pos */
+  .lbl-MR  { color: var(--clr-mid);   background: rgba(192,132,252,0.13); }
+
+  /* Array cells */
+  #array-display {
+    display: flex; justify-content: center; align-items: center;
+    flex-wrap: nowrap; gap: 6px; margin-bottom: 18px;
+  }
+  .cell-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .cell {
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Baloo 2', cursive; font-weight: 800; color: #fff;
+    transition: background 0.25s, box-shadow 0.25s, transform 0.25s, opacity 0.3s;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3); position: relative;
+  }
+  .cell::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(160deg, rgba(255,255,255,0.13) 0%, transparent 55%); pointer-events: none;
+  }
+
+  /* States */
+  .c-normal  { background: linear-gradient(135deg, #2e6fa3, #1e3a5f); border: 1.5px solid #2e6fa3; }
+  .c-active  { background: linear-gradient(135deg, #2e6fa3, #1e3a5f); border: 1.5px solid #2e6fa3; } /* in range, not mid */
+  .c-mid     { background: linear-gradient(135deg, #fde68a, #f59e0b); border: 2px solid #fbbf24; box-shadow: 0 0 22px rgba(245,158,11,0.6); transform: translateY(-7px) scale(1.1); }
+  .c-found   { background: linear-gradient(135deg, #43e97b, #38f9d7); border: 2px solid #38f9d7; box-shadow: 0 0 26px rgba(67,233,123,0.7); transform: translateY(-8px) scale(1.14); animation: popFound 0.4s ease; }
+  .c-elim    { background: linear-gradient(135deg, #111c2a, #0d1b2a); border: 1.5px solid #1a2f44; opacity: 0.28; }
+  .c-notfound{ background: linear-gradient(135deg, #7f1d1d, #991b1b); border: 1.5px solid #dc262655; opacity: 0.5; }
+
+  @keyframes popFound {
+    0%   { transform: translateY(-8px) scale(1); }
+    50%  { transform: translateY(-14px) scale(1.2); }
+    100% { transform: translateY(-8px) scale(1.14); }
+  }
+
+  .cell-idx { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
+
+  /* Condition badge */
+  .condition-row {
+    display: flex; justify-content: center; align-items: center;
+    gap: 16px; margin-bottom: 14px; flex-wrap: wrap; min-height: 32px;
+  }
+  .cond-badge {
+    font-family: 'Baloo 2', cursive; font-size: 0.88rem; font-weight: 800;
+    border-radius: 999px; padding: 4px 16px; letter-spacing: 0.5px;
+    border: 1.5px solid; transition: all 0.25s;
+  }
+  .cond-left  { color: var(--clr-left);  border-color: rgba(56,189,248,0.3);  background: rgba(56,189,248,0.08); }
+  .cond-mid   { color: var(--clr-mid);   border-color: rgba(245,158,11,0.3);  background: rgba(245,158,11,0.08); }
+  .cond-right { color: var(--clr-right); border-color: rgba(192,132,252,0.3); background: rgba(192,132,252,0.08); }
+  .cond-sep   { color: var(--muted); font-size: 1rem; }
+
+  /* Info + status */
+  .info-panel { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+  .info-card { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+  .info-card .label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px; }
+  .info-card .value { font-family: 'Baloo 2', cursive; font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+  #status-msg { text-align: center; font-size: 0.92rem; font-weight: 600; min-height: 22px; padding: 4px 0; transition: color 0.3s; }
+
+  .legend { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.74rem; color: var(--muted); }
+  .legend-dot { width: 11px; height: 11px; border-radius: 3px; }
+
+  /* Log */
+  .steps-log { width: 100%; max-width: 720px; background: var(--panel); border-radius: 16px; border: 1px solid rgba(52,211,153,0.08); padding: 16px 20px; max-height: 175px; overflow-y: auto; }
+  .steps-log h3 { font-family: 'Baloo 2', cursive; font-size: 0.88rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .log-entry { font-size: 0.81rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; gap: 10px; color: #b0cce0; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-step { font-family: 'Baloo 2', cursive; font-size: 0.76rem; color: var(--accent); font-weight: 700; min-width: 50px; }
+  .log-found    { color: #43e97b; font-weight: 700; }
+  .log-left     { color: #38bdf8; }
+  .log-right    { color: #c084fc; }
+  .log-notfound { color: #ff4e6a; font-weight: 700; }
+  .steps-log::-webkit-scrollbar { width: 5px; }
+  .steps-log::-webkit-scrollbar-track { background: transparent; }
+  .steps-log::-webkit-scrollbar-thumb { background: rgba(52,211,153,0.2); border-radius: 99px; }
+</style>
 </head>
 <body>
-  <h1>Hiện tại hệ thống này chưa cập nhập</h1>
+
+<h1>🔎 Thuật Toán Tìm Kiếm Nhị Phân</h1>
+<p class="subtitle">Binary Search — Mảng đã sắp xếp tăng dần, thu hẹp vùng tìm mỗi bước</p>
+
+<div class="config-panel">
+  <div class="config-group">
+    <label>Số phần tử (4–16)</label>
+    <input type="number" id="cfg-count" min="4" max="16" value="10" oninput="onCfgChange()">
+  </div>
+  <div class="config-group" style="flex:2;min-width:180px;">
+    <label>Nhập mảng thủ công (sẽ tự sắp xếp)</label>
+    <input type="text" id="cfg-custom" placeholder="VD: 3, 1, 8, 5, 12, 7" oninput="onCustomInput()">
+    <div class="err-msg" id="cfg-err"></div>
+  </div>
+  <div class="config-group">
+    <label>Giá trị cần tìm</label>
+    <input type="number" id="cfg-target" placeholder="Để trống = tự chọn">
+    <div class="err-msg" id="target-err"></div>
+  </div>
+  <button class="btn-reset" style="align-self:flex-end;white-space:nowrap" onclick="applyConfig()">✅ Áp dụng</button>
+</div>
+
+<div class="controls">
+  <button class="btn-reset" onclick="resetRandom()">🔀 Mảng mới</button>
+  <button class="btn-primary" id="btn-play" onclick="playAll()">▶ Chạy tự động</button>
+  <button class="btn-secondary" id="btn-step" onclick="stepOnce()">⏭ Bước tiếp</button>
+  <div class="speed-row">
+    <span>🐢</span>
+    <input type="range" id="speed" min="150" max="1500" value="800" step="100">
+    <span>🐇</span>
+  </div>
+</div>
+
+<div class="viz-area">
+  <div class="target-display">
+    <span class="target-label">Tìm kiếm</span>
+    <div class="target-box" id="target-box">?</div>
+    <span class="target-label" style="color:var(--muted);text-transform:none;letter-spacing:0;font-size:.82rem">trong mảng đã sắp xếp tăng dần</span>
+  </div>
+
+  <!-- L / mid / R labels -->
+  <div class="labels-row" id="labels-row"></div>
+
+  <!-- Cells -->
+  <div id="array-display"></div>
+
+  <!-- Condition badges -->
+  <div class="condition-row" id="condition-row"></div>
+
+  <div class="info-panel">
+    <div class="info-card"><div class="label">left (L)</div><div class="value" id="stat-L">–</div></div>
+    <div class="info-card"><div class="label">mid (M)</div><div class="value" id="stat-M" style="color:var(--clr-mid)">–</div></div>
+    <div class="info-card"><div class="label">right (R)</div><div class="value" id="stat-R" style="color:var(--clr-right)">–</div></div>
+    <div class="info-card"><div class="label">Bước / Kết quả</div><div class="value" id="stat-result">–</div></div>
+  </div>
+
+  <div id="status-msg">Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2e6fa3"></div>Vùng tìm kiếm</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Vị trí giữa (mid)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#43e97b"></div>Tìm thấy ✓</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#111c2a;border:1px solid #1a2f44"></div>Loại khỏi vùng tìm</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7f1d1d"></div>Không tìm thấy ✗</div>
+  </div>
+</div>
+
+<div class="steps-log">
+  <h3>📋 Nhật ký bước</h3>
+  <div id="log-body"></div>
+</div>
+
+<script>
+  let arr = [], target = null, steps = [], stepIdx = 0;
+  let playing = false, playTimer = null, iterCount = 0;
+
+  // ── helpers ──────────────────────────────────────────────
+  function randSortedArr(n, maxVal) {
+    const pool = [...Array(maxVal).keys()].map(x => x + 1);
+    const a = [];
+    while (a.length < n) {
+      const idx = Math.floor(Math.random() * pool.length);
+      a.push(pool.splice(idx, 1)[0]);
+    }
+    return a.sort((x, y) => x - y);
+  }
+
+  function onCfgChange() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+  }
+  function onCustomInput() { document.getElementById('cfg-err').textContent = ''; }
+
+  function applyConfig() {
+    const errEl = document.getElementById('cfg-err');
+    const tErrEl = document.getElementById('target-err');
+    tErrEl.textContent = '';
+
+    let newArr;
+    const customRaw = document.getElementById('cfg-custom').value.trim();
+    if (customRaw) {
+      const nums = customRaw.split(/[\s,،]+/).filter(Boolean).map(Number);
+      if (nums.some(isNaN))   { errEl.textContent = '⚠ Chỉ nhập số nguyên.'; return; }
+      if (nums.length < 2)    { errEl.textContent = '⚠ Cần ít nhất 2 phần tử.'; return; }
+      if (nums.length > 16)   { errEl.textContent = '⚠ Tối đa 16 phần tử.'; return; }
+      errEl.textContent = '';
+      newArr = [...nums].sort((a, b) => a - b);  // auto-sort
+    } else {
+      const n = parseInt(document.getElementById('cfg-count').value);
+      if (isNaN(n) || n < 4 || n > 16) { errEl.textContent = '⚠ Số phần tử từ 4 đến 16.'; return; }
+      newArr = randSortedArr(n, n <= 10 ? 20 : 99);
+    }
+
+    const tRaw = document.getElementById('cfg-target').value.trim();
+    let newTarget;
+    if (tRaw === '') {
+      // 65% chance element exists
+      newTarget = Math.random() < 0.65
+        ? newArr[Math.floor(Math.random() * newArr.length)]
+        : (() => { let v; do { v = Math.floor(Math.random() * (newArr[newArr.length-1] + 5)) + 1; } while (newArr.includes(v)); return v; })();
+    } else {
+      newTarget = parseInt(tRaw);
+      if (isNaN(newTarget)) { tErrEl.textContent = '⚠ Phải là số nguyên.'; return; }
+    }
+
+    initWith(newArr, newTarget);
+  }
+
+  function resetRandom() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+    document.getElementById('cfg-target').value = '';
+    document.getElementById('target-err').textContent = '';
+    applyConfig();
+  }
+
+  // ── build steps ───────────────────────────────────────────
+  // Each step: { type, L, R, mid, arr, target }
+  // types: 'init' | 'check' | 'found' | 'go_left' | 'go_right' | 'notfound'
+  function buildSteps(a, t) {
+    const steps = [];
+    let L = 0, R = a.length - 1;
+
+    steps.push({ type: 'init', L, R, mid: null, arr: [...a] });
+
+    while (L <= R) {
+      const mid = Math.floor((L + R) / 2);
+      steps.push({ type: 'check', L, R, mid, arr: [...a] });
+
+      if (a[mid] === t) {
+        steps.push({ type: 'found', L, R, mid, arr: [...a] });
+        return steps;
+      } else if (t < a[mid]) {
+        steps.push({ type: 'go_left', L, R, mid, arr: [...a], newR: mid - 1 });
+        R = mid - 1;
+      } else {
+        steps.push({ type: 'go_right', L, R, mid, arr: [...a], newL: mid + 1 });
+        L = mid + 1;
+      }
+    }
+    steps.push({ type: 'notfound', L, R, mid: null, arr: [...a] });
+    return steps;
+  }
+
+  // ── init ─────────────────────────────────────────────────
+  function initWith(a, t) {
+    stopPlay();
+    arr = a; target = t;
+    steps = buildSteps(arr, target);
+    stepIdx = 0; iterCount = 0;
+
+    document.getElementById('target-box').textContent = t;
+    document.getElementById('stat-L').textContent = '–';
+    document.getElementById('stat-M').textContent = '–';
+    document.getElementById('stat-R').textContent = '–';
+    document.getElementById('stat-result').textContent = '–';
+    document.getElementById('stat-result').style.color = '';
+    document.getElementById('log-body').innerHTML = '';
+    document.getElementById('btn-play').disabled = false;
+    document.getElementById('btn-step').disabled = false;
+    setMsg('Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.', '');
+    renderAll({ type: 'init', L: 0, R: arr.length - 1, mid: null, arr });
+  }
+
+  // ── render ────────────────────────────────────────────────
+  function renderAll(step) {
+    renderCells(step);
+    renderLabels(step);
+    renderCondition(step);
+    renderStats(step);
+  }
+
+  function cellClass(i, step) {
+    const { L, R, mid, type } = step;
+    if (type === 'notfound') return 'c-notfound';
+    if (type === 'found' && i === mid) return 'c-found';
+    if (mid !== null && i === mid) return 'c-mid';
+    if (L !== null && R !== null && i >= L && i <= R) return 'c-active';
+    return 'c-elim';
+  }
+
+  function renderCells(step) {
+    const display = document.getElementById('array-display');
+    const n = step.arr.length;
+    const cellW = Math.max(32, Math.min(50, Math.floor(640 / n) - 8));
+    const fontSize = cellW < 38 ? '0.78rem' : '1rem';
+    display.style.gap = Math.max(3, Math.min(8, Math.floor(420/n) - cellW)) + 'px';
+    display.innerHTML = '';
+
+    step.arr.forEach((v, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'cell-wrap';
+      const cell = document.createElement('div');
+      cell.className = 'cell ' + cellClass(i, step);
+      cell.style.width = cellW + 'px';
+      cell.style.height = cellW + 'px';
+      cell.style.fontSize = fontSize;
+      cell.textContent = v;
+      const idx = document.createElement('div');
+      idx.className = 'cell-idx';
+      idx.textContent = i;
+      wrap.appendChild(cell);
+      wrap.appendChild(idx);
+      display.appendChild(wrap);
+    });
+  }
+
+  function renderLabels(step) {
+    const row = document.getElementById('labels-row');
+    const n = step.arr.length;
+    const cellW = Math.max(32, Math.min(50, Math.floor(640 / n) - 8));
+    const gap = Math.max(3, Math.min(8, Math.floor(420/n) - cellW));
+    row.style.gap = gap + 'px';
+    row.innerHTML = '';
+
+    const { L, R, mid } = step;
+
+    for (let i = 0; i < n; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'label-slot';
+      slot.style.width = cellW + 'px';
+
+      const tags = [];
+      if (i === L && i === R && i === mid) tags.push({ text: 'L=M=R', cls: 'lbl lbl-M' });
+      else if (i === L && i === mid)       tags.push({ text: 'L=M',   cls: 'lbl lbl-LM' });
+      else if (i === R && i === mid)       tags.push({ text: 'M=R',   cls: 'lbl lbl-MR' });
+      else if (i === L && i === R)         tags.push({ text: 'L=R',   cls: 'lbl lbl-L' });
+      else {
+        if (i === L)   tags.push({ text: 'L', cls: 'lbl lbl-L' });
+        if (i === mid) tags.push({ text: 'M', cls: 'lbl lbl-M' });
+        if (i === R)   tags.push({ text: 'R', cls: 'lbl lbl-R' });
+      }
+
+      tags.forEach(t => {
+        const lbl = document.createElement('span');
+        lbl.className = t.cls;
+        lbl.textContent = t.text;
+        lbl.style.marginLeft = tags.length > 1 ? '1px' : '0';
+        slot.appendChild(lbl);
+      });
+
+      row.appendChild(slot);
+    }
+  }
+
+  function renderCondition(step) {
+    const row = document.getElementById('condition-row');
+    row.innerHTML = '';
+    if (step.type === 'init') return;
+
+    const { L, R, mid, arr, type } = step;
+    if (mid === null) return;
+
+    const midVal = arr[mid];
+
+    const mkBadge = (text, cls) => {
+      const b = document.createElement('div');
+      b.className = 'cond-badge ' + cls;
+      b.textContent = text;
+      return b;
+    };
+    const mkSep = (text) => {
+      const s = document.createElement('span');
+      s.className = 'cond-sep';
+      s.textContent = text;
+      return s;
+    };
+
+    row.appendChild(mkBadge(`L=${L}`, 'cond-left'));
+    row.appendChild(mkSep('·'));
+    row.appendChild(mkBadge(`mid=${mid}  →  arr[mid]=${midVal}`, 'cond-mid'));
+    row.appendChild(mkSep('·'));
+    row.appendChild(mkBadge(`R=${R}`, 'cond-right'));
+
+    if (type === 'go_left') {
+      row.appendChild(mkSep('·'));
+      row.appendChild(mkBadge(`${target} < ${midVal} → R = mid−1 = ${mid-1}`, 'cond-right'));
+    } else if (type === 'go_right') {
+      row.appendChild(mkSep('·'));
+      row.appendChild(mkBadge(`${target} > ${midVal} → L = mid+1 = ${mid+1}`, 'cond-left'));
+    } else if (type === 'found') {
+      row.appendChild(mkSep('·'));
+      const b = mkBadge(`✓ arr[${mid}] = ${target}`, 'cond-mid');
+      b.style.color = '#43e97b';
+      b.style.borderColor = 'rgba(67,233,123,0.4)';
+      b.style.background = 'rgba(67,233,123,0.1)';
+      row.appendChild(b);
+    }
+  }
+
+  function renderStats(step) {
+    const { L, R, mid } = step;
+    document.getElementById('stat-L').textContent = L !== null ? L : '–';
+    document.getElementById('stat-M').textContent = mid !== null ? mid : '–';
+    document.getElementById('stat-R').textContent = R !== null ? R : '–';
+  }
+
+  function setMsg(text, color) {
+    const el = document.getElementById('status-msg');
+    el.textContent = text; el.style.color = color || '';
+  }
+
+  function logEntry(text, cls) {
+    const lb = document.getElementById('log-body');
+    const e = document.createElement('div');
+    e.className = 'log-entry';
+    const s = document.createElement('span');
+    s.className = 'log-step';
+    s.textContent = `#${stepIdx}`;
+    const t = document.createElement('span');
+    if (cls) t.className = cls;
+    t.textContent = text;
+    e.appendChild(s); e.appendChild(t);
+    lb.appendChild(e);
+    lb.scrollTop = lb.scrollHeight;
+  }
+
+  // ── step logic ────────────────────────────────────────────
+  function applyStep() {
+    if (stepIdx >= steps.length) return false;
+    const step = steps[stepIdx++];
+
+    renderAll(step);
+
+    if (step.type === 'init') {
+      setMsg(`Mảng đã sắp xếp. Vùng tìm kiếm ban đầu: L=0, R=${step.R}. Bắt đầu!`, '');
+      logEntry(`Khởi động — L=0, R=${step.R}, tìm kiếm: ${target}`);
+      return true;
+    }
+
+    if (step.type === 'check') {
+      iterCount++;
+      const midVal = step.arr[step.mid];
+      document.getElementById('stat-result').textContent = `Bước ${iterCount}`;
+      setMsg(
+        `mid = ⌊(${step.L}+${step.R})/2⌋ = ${step.mid}  →  arr[${step.mid}] = ${midVal}  —  so sánh với ${target}`,
+        '#f59e0b'
+      );
+      logEntry(`Bước ${iterCount}: L=${step.L}, R=${step.R}, mid=${step.mid}, arr[mid]=${midVal}`);
+      return true;
+    }
+
+    if (step.type === 'found') {
+      document.getElementById('stat-result').textContent = `[${step.mid}] ✓`;
+      document.getElementById('stat-result').style.color = '#43e97b';
+      setMsg(`🎉 Tìm thấy ${target} tại vị trí [${step.mid}]! Dừng.`, '#43e97b');
+      logEntry(`✓ TÌM THẤY tại arr[${step.mid}] = ${target}`, 'log-found');
+      document.getElementById('btn-play').disabled = true;
+      document.getElementById('btn-step').disabled = true;
+      return false;
+    }
+
+    if (step.type === 'go_left') {
+      const midVal = step.arr[step.mid];
+      setMsg(
+        `${target} < arr[mid]=${midVal} → Tìm nửa trước: R = mid−1 = ${step.newR}`,
+        '#38bdf8'
+      );
+      logEntry(`  → ${target} < ${midVal}: thu hẹp sang trái, R = ${step.newR}`, 'log-left');
+      return true;
+    }
+
+    if (step.type === 'go_right') {
+      const midVal = step.arr[step.mid];
+      setMsg(
+        `${target} > arr[mid]=${midVal} → Tìm nửa sau: L = mid+1 = ${step.newL}`,
+        '#c084fc'
+      );
+      logEntry(`  → ${target} > ${midVal}: thu hẹp sang phải, L = ${step.newL}`, 'log-right');
+      return true;
+    }
+
+    if (step.type === 'notfound') {
+      document.getElementById('stat-result').textContent = '✗';
+      document.getElementById('stat-result').style.color = '#ff4e6a';
+      setMsg(`❌ Vùng tìm kiếm rỗng (L > R) — không tìm thấy ${target}.`, '#ff4e6a');
+      logEntry(`✗ KHÔNG TÌM THẤY ${target}. Vùng rỗng.`, 'log-notfound');
+      document.getElementById('btn-play').disabled = true;
+      document.getElementById('btn-step').disabled = true;
+      return false;
+    }
+
+    return true;
+  }
+
+  function stepOnce() { stopPlay(); applyStep(); }
+
+  function playAll() {
+    if (playing) { stopPlay(); return; }
+    document.getElementById('btn-play').textContent = '⏸ Dừng';
+    playing = true;
+    function next() {
+      const cont = applyStep();
+      if (cont && playing) {
+        playTimer = setTimeout(next, 1650 - parseInt(document.getElementById('speed').value));
+      } else stopPlay(true);
+    }
+    next();
+  }
+
+  function stopPlay(done) {
+    playing = false; clearTimeout(playTimer);
+    document.getElementById('btn-play').textContent = '▶ Chạy tự động';
+  }
+
+  resetRandom();
+</script>
 </body>
 </html>

@@ -1,11 +1,498 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thuật Toán Tìm Kiếm Tuần Tự</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1b2a;
+    --panel: #132236;
+    --accent: #fb7185;
+    --accent2: #f7971e;
+    --found: #43e97b;
+    --skip: #6b8cae;
+    --current: #fb7185;
+    --text: #e8f4fd;
+    --muted: #6b8cae;
+    --bubble: #1e3a5f;
+    --bubble-border: #2e6fa3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 12px;
+    background-image:
+      radial-gradient(ellipse at 15% 15%, rgba(251,113,133,0.09) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 85%, rgba(247,151,30,0.07) 0%, transparent 55%);
+  }
+  h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2rem; font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 1px; margin-bottom: 4px;
+    text-shadow: 0 0 24px rgba(251,113,133,0.45);
+  }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; letter-spacing: 0.5px; }
+
+  /* Config */
+  .config-panel {
+    width: 100%; max-width: 700px; background: var(--panel);
+    border-radius: 16px; border: 1px solid rgba(251,113,133,0.12);
+    padding: 18px 22px; margin-bottom: 18px;
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+  }
+  .config-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 140px; }
+  .config-group label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .config-group input[type=number], .config-group input[type=text] {
+    background: rgba(0,0,0,0.25); border: 1.5px solid rgba(251,113,133,0.2);
+    border-radius: 10px; color: var(--text); font-family: 'Baloo 2', cursive;
+    font-size: 1rem; font-weight: 700; padding: 8px 12px; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  .config-group input:focus { border-color: var(--accent); }
+  .config-group input::placeholder { color: #3a5a7a; font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 600; }
+  .err-msg { font-size: 0.78rem; color: #ff4e6a; min-height: 18px; margin-top: 2px; }
+
+  /* Controls */
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; align-items: center; }
+  input[type=range] { accent-color: var(--accent); width: 120px; cursor: pointer; }
+  button {
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem;
+    padding: 9px 22px; border-radius: 999px; border: none; cursor: pointer;
+    transition: all 0.18s; letter-spacing: 0.5px;
+  }
+  .btn-primary { background: linear-gradient(90deg, var(--accent), #e11d48); color: #fff; box-shadow: 0 0 18px rgba(251,113,133,0.3); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(251,113,133,0.5); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-secondary { background: var(--panel); color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn-secondary:hover { background: rgba(251,113,133,0.1); }
+  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-reset { background: var(--panel); color: var(--accent2); border: 1.5px solid var(--accent2); }
+  .btn-reset:hover { background: rgba(247,151,30,0.1); }
+  .speed-row { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+
+  /* Viz */
+  .viz-area {
+    width: 100%; max-width: 700px; background: var(--panel);
+    border-radius: 20px; border: 1px solid rgba(251,113,133,0.13);
+    padding: 28px 24px 24px; box-shadow: 0 8px 48px rgba(0,0,0,0.4); margin-bottom: 20px;
+  }
+
+  /* Array row */
+  #array-display {
+    display: flex; justify-content: center; align-items: center;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 24px; min-height: 90px;
+  }
+  .cell-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .cell {
+    width: 52px; height: 52px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Baloo 2', cursive; font-size: 1.2rem; font-weight: 800; color: #fff;
+    transition: background 0.22s, box-shadow 0.22s, transform 0.22s;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3); position: relative;
+  }
+  .cell::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(160deg, rgba(255,255,255,0.13) 0%, transparent 55%); pointer-events: none;
+  }
+  .cell-normal  { background: linear-gradient(135deg, var(--bubble-border), var(--bubble)); border: 1.5px solid var(--bubble-border); }
+  .cell-current { background: linear-gradient(135deg, #fda4af, #fb7185); border: 2px solid #fb7185; box-shadow: 0 0 22px rgba(251,113,133,0.65); transform: translateY(-6px) scale(1.08); }
+  .cell-skip    { background: linear-gradient(135deg, #1e3a5f88, #0d1b2a); border: 1.5px solid #2e6fa355; opacity: 0.55; }
+  .cell-found   { background: linear-gradient(135deg, #43e97b, #38f9d7); border: 2px solid #38f9d7; box-shadow: 0 0 24px rgba(67,233,123,0.65); transform: translateY(-6px) scale(1.12); animation: foundPop 0.4s ease; }
+  .cell-notfound{ background: linear-gradient(135deg, #ff4e6a, #991b1b); border: 1.5px solid #ff4e6a55; opacity: 0.5; }
+
+  @keyframes foundPop {
+    0%   { transform: translateY(-6px) scale(1); }
+    50%  { transform: translateY(-10px) scale(1.2); }
+    100% { transform: translateY(-6px) scale(1.12); }
+  }
+
+  .cell-idx { font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+
+  /* Pointer arrow */
+  .pointer-row {
+    display: flex; justify-content: center; align-items: flex-start;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 16px; min-height: 24px;
+  }
+  .pointer-slot { width: 52px; display: flex; justify-content: center; }
+  .pointer-arrow { font-size: 1.1rem; color: var(--accent); animation: blink 0.8s ease-in-out infinite alternate; }
+  @keyframes blink { from { opacity: 0.5; } to { opacity: 1; } }
+
+  /* Target display */
+  .target-display {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-bottom: 18px;
+  }
+  .target-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .target-box {
+    font-family: 'Baloo 2', cursive; font-size: 1.4rem; font-weight: 800;
+    color: var(--accent); background: rgba(251,113,133,0.12);
+    border: 2px solid rgba(251,113,133,0.35); border-radius: 10px;
+    padding: 4px 18px; min-width: 60px; text-align: center;
+    box-shadow: 0 0 14px rgba(251,113,133,0.2);
+  }
+  .target-hint { font-size: 0.78rem; color: var(--muted); }
+
+  /* Info panel */
+  .info-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+  .info-card { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.06); text-align: center; }
+  .info-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .info-card .value { font-family: 'Baloo 2', cursive; font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+
+  #status-msg { text-align: center; font-size: 0.92rem; font-weight: 600; min-height: 24px; color: var(--text); padding: 4px 0; transition: color 0.3s; }
+
+  .legend { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* Steps log */
+  .steps-log { width: 100%; max-width: 700px; background: var(--panel); border-radius: 16px; border: 1px solid rgba(251,113,133,0.08); padding: 16px 20px; max-height: 180px; overflow-y: auto; }
+  .steps-log h3 { font-family: 'Baloo 2', cursive; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .log-entry { font-size: 0.82rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; gap: 10px; align-items: baseline; color: #b0cce0; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-step { font-family: 'Baloo 2', cursive; font-size: 0.78rem; color: var(--accent); font-weight: 700; min-width: 50px; white-space: nowrap; }
+  .log-found { color: #43e97b; font-weight: 700; }
+  .log-skip { color: #6b8cae; }
+  .log-notfound { color: #ff4e6a; font-weight: 700; }
+  .steps-log::-webkit-scrollbar { width: 5px; }
+  .steps-log::-webkit-scrollbar-track { background: transparent; }
+  .steps-log::-webkit-scrollbar-thumb { background: rgba(251,113,133,0.2); border-radius: 99px; }
+</style>
 </head>
 <body>
-  <h1>Hiện tại hệ thống này chưa cập nhập</h1>
+
+<h1>🔍 Thuật Toán Tìm Kiếm Tuần Tự</h1>
+<p class="subtitle">Linear Search Visualization — Duyệt từng phần tử từ đầu đến cuối</p>
+
+<div class="config-panel">
+  <div class="config-group">
+    <label>Số phần tử (3–15)</label>
+    <input type="number" id="cfg-count" min="3" max="15" value="8" oninput="onCfgChange()">
+  </div>
+  <div class="config-group">
+    <label>Nhập mảng thủ công</label>
+    <input type="text" id="cfg-custom" placeholder="VD: 5, 3, 8, 1, 9, 2" oninput="onCustomInput()">
+    <div class="err-msg" id="cfg-err"></div>
+  </div>
+  <div class="config-group">
+    <label>Giá trị cần tìm</label>
+    <input type="number" id="cfg-target" placeholder="VD: 7">
+    <div class="err-msg" id="target-err"></div>
+  </div>
+  <button class="btn-reset" style="align-self:flex-end;white-space:nowrap" onclick="applyConfig()">✅ Áp dụng</button>
+</div>
+
+<div class="controls">
+  <button class="btn-reset" onclick="resetRandom()">🔀 Mảng mới</button>
+  <button class="btn-primary" id="btn-play" onclick="playAll()">▶ Chạy tự động</button>
+  <button class="btn-secondary" id="btn-step" onclick="stepOnce()">⏭ Bước tiếp</button>
+  <div class="speed-row">
+    <span>🐢</span>
+    <input type="range" id="speed" min="100" max="1500" value="700" step="100">
+    <span>🐇</span>
+  </div>
+</div>
+
+<div class="viz-area">
+  <!-- Target -->
+  <div class="target-display">
+    <span class="target-label">Tìm kiếm</span>
+    <div class="target-box" id="target-box">?</div>
+    <span class="target-hint">trong mảng bên dưới</span>
+  </div>
+
+  <!-- Pointer row -->
+  <div class="pointer-row" id="pointer-row"></div>
+
+  <!-- Array cells -->
+  <div id="array-display"></div>
+
+  <div class="info-panel">
+    <div class="info-card"><div class="label">Bước hiện tại</div><div class="value" id="stat-step">–</div></div>
+    <div class="info-card"><div class="label">Đã so sánh</div><div class="value" id="stat-cmp">0</div></div>
+    <div class="info-card"><div class="label">Kết quả</div><div class="value" id="stat-result">–</div></div>
+  </div>
+
+  <div id="status-msg">Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2e6fa3"></div>Chưa xét</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb7185;border-radius:50%"></div>Đang xét</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1e3a5f;opacity:0.5"></div>Đã bỏ qua</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#43e97b"></div>Tìm thấy ✓</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff4e6a"></div>Không tìm thấy ✗</div>
+  </div>
+</div>
+
+<div class="steps-log">
+  <h3>📋 Nhật ký bước</h3>
+  <div id="log-body"></div>
+</div>
+
+<script>
+  let arr = [], target = null, steps = [], stepIdx = 0;
+  let playing = false, playTimer = null, cmpCount = 0;
+
+  function randArr(n, maxVal) {
+    const pool = [...Array(maxVal).keys()].map(x => x + 1);
+    const a = [];
+    while (a.length < n) {
+      const idx = Math.floor(Math.random() * pool.length);
+      a.push(pool.splice(idx, 1)[0]);
+    }
+    return a;
+  }
+
+  function onCfgChange() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+  }
+  function onCustomInput() { document.getElementById('cfg-err').textContent = ''; }
+
+  function applyConfig() {
+    const errEl = document.getElementById('cfg-err');
+    const tErrEl = document.getElementById('target-err');
+    tErrEl.textContent = '';
+
+    // Parse array
+    let newArr;
+    const customRaw = document.getElementById('cfg-custom').value.trim();
+    if (customRaw) {
+      const parts = customRaw.split(/[\s,،]+/).filter(Boolean);
+      const nums = parts.map(Number);
+      if (nums.some(isNaN)) { errEl.textContent = '⚠ Chỉ nhập số, phân cách bằng dấu phẩy hoặc cách.'; return; }
+      if (nums.length < 2) { errEl.textContent = '⚠ Cần ít nhất 2 phần tử.'; return; }
+      if (nums.length > 15) { errEl.textContent = '⚠ Tối đa 15 phần tử.'; return; }
+      errEl.textContent = '';
+      newArr = nums;
+    } else {
+      const n = parseInt(document.getElementById('cfg-count').value);
+      if (isNaN(n) || n < 3 || n > 15) { errEl.textContent = '⚠ Số phần tử từ 3 đến 15.'; return; }
+      newArr = randArr(n, n <= 9 ? 15 : 99);
+    }
+
+    // Parse target
+    const tRaw = document.getElementById('cfg-target').value.trim();
+    let newTarget;
+    if (tRaw === '') {
+      // pick random: 70% chance it exists in array
+      if (Math.random() < 0.7) {
+        newTarget = newArr[Math.floor(Math.random() * newArr.length)];
+      } else {
+        // pick something not in array
+        let v;
+        do { v = Math.floor(Math.random() * 20) + 1; } while (newArr.includes(v));
+        newTarget = v;
+      }
+    } else {
+      newTarget = parseInt(tRaw);
+      if (isNaN(newTarget)) { tErrEl.textContent = '⚠ Giá trị tìm kiếm phải là số nguyên.'; return; }
+    }
+
+    initWith(newArr, newTarget);
+  }
+
+  function resetRandom() {
+    document.getElementById('cfg-custom').value = '';
+    document.getElementById('cfg-err').textContent = '';
+    document.getElementById('cfg-target').value = '';
+    document.getElementById('target-err').textContent = '';
+    applyConfig();
+  }
+
+  function buildSteps(a, t) {
+    const steps = [];
+    const n = a.length;
+    for (let i = 0; i < n; i++) {
+      steps.push({ type: 'check', idx: i, arr: [...a], skipped: i });
+      if (a[i] === t) {
+        steps.push({ type: 'found', idx: i, arr: [...a], skipped: i });
+        return steps;
+      } else {
+        steps.push({ type: 'skip', idx: i, arr: [...a], skipped: i });
+      }
+    }
+    steps.push({ type: 'notfound', arr: [...a] });
+    return steps;
+  }
+
+  function initWith(a, t) {
+    stopPlay();
+    arr = a; target = t;
+    steps = buildSteps(arr, target);
+    stepIdx = 0; cmpCount = 0;
+    document.getElementById('target-box').textContent = target;
+    document.getElementById('stat-result').textContent = '–';
+    document.getElementById('stat-result').style.color = '';
+    document.getElementById('stat-step').textContent = '–';
+    document.getElementById('stat-cmp').textContent = '0';
+    document.getElementById('log-body').innerHTML = '';
+    document.getElementById('btn-play').disabled = false;
+    document.getElementById('btn-step').disabled = false;
+    setMsg('Nhấn ▶ để bắt đầu hoặc ⏭ để đi từng bước.', '');
+    renderCells(arr, -1, new Set(), '');
+    renderPointer(arr.length, -1);
+  }
+
+  function renderCells(a, currentIdx, skippedSet, type) {
+    const display = document.getElementById('array-display');
+    const n = a.length;
+    const cellW = Math.max(36, Math.min(52, Math.floor(620 / n) - 8));
+    const fontSize = cellW < 40 ? '0.85rem' : '1.15rem';
+    display.style.gap = Math.max(4, Math.min(8, Math.floor(380/n) - cellW)) + 'px';
+    display.innerHTML = '';
+
+    a.forEach((v, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'cell-wrap';
+
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.style.width = cellW + 'px';
+      cell.style.height = cellW + 'px';
+      cell.style.fontSize = fontSize;
+
+      if (type === 'found' && i === currentIdx) {
+        cell.classList.add('cell-found');
+      } else if (type === 'notfound') {
+        cell.classList.add('cell-notfound');
+      } else if (i === currentIdx) {
+        cell.classList.add('cell-current');
+      } else if (skippedSet.has(i)) {
+        cell.classList.add('cell-skip');
+      } else {
+        cell.classList.add('cell-normal');
+      }
+
+      cell.textContent = v;
+      const idx = document.createElement('div');
+      idx.className = 'cell-idx';
+      idx.textContent = i;
+      wrap.appendChild(cell);
+      wrap.appendChild(idx);
+      display.appendChild(wrap);
+    });
+  }
+
+  function renderPointer(n, currentIdx) {
+    const row = document.getElementById('pointer-row');
+    const cellW = Math.max(36, Math.min(52, Math.floor(620 / n) - 8));
+    const gap = Math.max(4, Math.min(8, Math.floor(380/n) - cellW));
+    row.style.gap = gap + 'px';
+    row.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'pointer-slot';
+      slot.style.width = cellW + 'px';
+      if (i === currentIdx) {
+        const arrow = document.createElement('div');
+        arrow.className = 'pointer-arrow';
+        arrow.textContent = '▼';
+        slot.appendChild(arrow);
+      }
+      row.appendChild(slot);
+    }
+  }
+
+  function setMsg(text, color) {
+    const el = document.getElementById('status-msg');
+    el.textContent = text;
+    el.style.color = color || '';
+  }
+
+  function logEntry(text, cls) {
+    const lb = document.getElementById('log-body');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    const stepEl = document.createElement('span');
+    stepEl.className = 'log-step';
+    stepEl.textContent = `#${stepIdx}`;
+    const textEl = document.createElement('span');
+    if (cls) textEl.className = cls;
+    textEl.textContent = text;
+    entry.appendChild(stepEl);
+    entry.appendChild(textEl);
+    lb.appendChild(entry);
+    lb.scrollTop = lb.scrollHeight;
+  }
+
+  function applyStep() {
+    if (stepIdx >= steps.length) return false;
+    const step = steps[stepIdx++];
+    const skippedSet = new Set();
+    if (step.skipped !== undefined) for (let k = 0; k < step.skipped; k++) skippedSet.add(k);
+
+    if (step.type === 'check') {
+      cmpCount++;
+      renderCells(step.arr, step.idx, skippedSet, 'check');
+      renderPointer(step.arr.length, step.idx);
+      setMsg(`Bước ${cmpCount}: Kiểm tra arr[${step.idx}] = ${step.arr[step.idx]} — có bằng ${target} không?`, '#fb7185');
+      logEntry(`Kiểm tra arr[${step.idx}] = ${step.arr[step.idx]} ≠ ${target}?`);
+      document.getElementById('stat-step').textContent = step.idx;
+      document.getElementById('stat-cmp').textContent = cmpCount;
+    } else if (step.type === 'found') {
+      renderCells(step.arr, step.idx, skippedSet, 'found');
+      renderPointer(step.arr.length, step.idx);
+      setMsg(`🎉 Tìm thấy ${target} tại vị trí [${step.idx}]! Dừng tìm kiếm.`, '#43e97b');
+      logEntry(`✓ TÌM THẤY! arr[${step.idx}] = ${target}`, 'log-found');
+      const statResult = document.getElementById('stat-result');
+      statResult.textContent = `[${step.idx}] ✓`;
+      statResult.style.color = '#43e97b';
+      document.getElementById('btn-play').disabled = true;
+      document.getElementById('btn-step').disabled = true;
+      return false;
+    } else if (step.type === 'skip') {
+      const nextSkipped = new Set(skippedSet);
+      nextSkipped.add(step.idx);
+      renderCells(step.arr, -1, nextSkipped, '');
+      renderPointer(step.arr.length, -1);
+      setMsg(`arr[${step.idx}] = ${step.arr[step.idx]} ≠ ${target} → Bỏ qua, tiếp tục…`, '');
+      logEntry(`  → ${step.arr[step.idx]} ≠ ${target}: bỏ qua vị trí [${step.idx}]`, 'log-skip');
+    } else if (step.type === 'notfound') {
+      renderCells(step.arr, -1, new Set([...Array(step.arr.length).keys()]), 'notfound');
+      renderPointer(step.arr.length, -1);
+      setMsg(`❌ Đã duyệt hết mảng — không tìm thấy ${target}.`, '#ff4e6a');
+      logEntry(`✗ KHÔNG TÌM THẤY ${target} trong mảng.`, 'log-notfound');
+      const statResult = document.getElementById('stat-result');
+      statResult.textContent = '✗';
+      statResult.style.color = '#ff4e6a';
+      document.getElementById('btn-play').disabled = true;
+      document.getElementById('btn-step').disabled = true;
+      return false;
+    }
+    return true;
+  }
+
+  function stepOnce() { stopPlay(); applyStep(); }
+
+  function playAll() {
+    if (playing) { stopPlay(); return; }
+    document.getElementById('btn-play').textContent = '⏸ Dừng';
+    playing = true;
+    function next() {
+      const cont = applyStep();
+      if (cont && playing) {
+        playTimer = setTimeout(next, 1600 - parseInt(document.getElementById('speed').value));
+      } else stopPlay(true);
+    }
+    next();
+  }
+
+  function stopPlay(done) {
+    playing = false;
+    clearTimeout(playTimer);
+    document.getElementById('btn-play').textContent = '▶ Chạy tự động';
+  }
+
+  // Init on load
+  resetRandom();
+</script>
 </body>
 </html>
