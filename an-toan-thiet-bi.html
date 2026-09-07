@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thực hành cắm cổng máy tính</title>
+<style>
+  :root{
+    --bg: #0B1220;
+    --bg-grid: rgba(148,163,184,0.06);
+    --panel: #101B2D;
+    --panel-line: #24344B;
+    --card: #132036;
+    --card-hover: #182842;
+    --ink: #E7ECF3;
+    --muted: #8CA0B8;
+    --cyan: #4FD5E8;
+    --cyan-dim: rgba(79,213,232,0.15);
+    --ok: #3ED598;
+    --ok-dim: rgba(62,213,152,0.15);
+    --bad: #FF6B6B;
+    --bad-dim: rgba(255,107,107,0.15);
+    --amber: #F5B860;
+    --font-head: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/38px 38px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/38px 38px,
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--font-mono);
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:14px;
+    border-bottom:1px solid var(--panel-line);
+    padding-bottom:18px;
+    margin-bottom:26px;
+  }
+  h1{
+    font-family:var(--font-head);
+    font-size:clamp(22px,4vw,32px);
+    font-weight:600;
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:14px;
+    max-width:52ch;
+    line-height:1.6;
+    margin:0;
+  }
+  .score{
+    font-family:var(--font-head);
+    font-size:15px;
+    color:var(--cyan);
+    white-space:nowrap;
+    border:1px solid var(--panel-line);
+    padding:8px 14px;
+    border-radius:3px;
+    background:var(--panel);
+  }
+  .score b{font-size:20px;}
+
+  .stage{
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap:22px;
+  }
+  @media (max-width:760px){
+    .stage{grid-template-columns:1fr;}
+  }
+
+  .panel-box{
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:6px;
+    padding:20px 16px 24px;
+  }
+  .panel-title{
+    font-family:var(--font-head);
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  .backpanel{
+    background:#0D1626;
+    border:2px solid #2A3B54;
+    border-radius:5px;
+    padding:22px 10px;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+
+  .port{
+    width:78px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    position:relative;
+    padding:6px 2px 10px;
+    border-radius:6px;
+    border:1px solid transparent;
+    transition:transform .15s ease, border-color .2s ease, background .2s ease;
+  }
+  .port:hover{background:rgba(255,255,255,0.03);}
+  .port.armed{border-color:var(--cyan); background:var(--cyan-dim);}
+  .port.correct{border-color:var(--ok); background:var(--ok-dim);}
+  .port.shake{animation: shake .38s ease;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-6px);}
+    40%{transform:translateX(5px);}
+    60%{transform:translateX(-4px);}
+    80%{transform:translateX(3px);}
+  }
+  .port-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;}
+  .port-icon img{max-width:100%;max-height:100%;object-fit:contain;}
+  .port-num{
+    font-family:var(--font-head);
+    font-size:11px;
+    color:var(--muted);
+    background:#1B2A42;
+    border:1px solid var(--panel-line);
+    border-radius:3px;
+    width:18px;height:18px;
+    display:flex;align-items:center;justify-content:center;
+    position:absolute;
+    top:-8px;
+    left:6px;
+  }
+  .port.correct .port-num{background:var(--ok);color:#04241A;border-color:var(--ok);}
+  .port-label{font-size:9.5px;color:var(--muted);text-align:center;line-height:1.3;}
+  .port.correct .port-label{color:var(--ok);}
+  .port-fill{fill:var(--ink);}
+  .port-plugged{
+    font-size:9px;
+    color:var(--ok);
+    text-align:center;
+    max-width:74px;
+    line-height:1.3;
+  }
+
+  .devices{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .device{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--card);
+    border:1px solid var(--panel-line);
+    border-radius:5px;
+    padding:10px 12px;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, opacity .2s ease, transform .15s ease;
+  }
+  .device:hover:not(.done){background:var(--card-hover); transform:translateX(2px);}
+  .device.selected{border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan) inset;}
+  .device.done{
+    opacity:0.45;
+    cursor:default;
+    border-color:var(--ok);
+  }
+  .device-icon{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#0D1626;border-radius:4px;border:1px solid var(--panel-line);}
+  .device-icon img{max-width:82%;max-height:82%;object-fit:contain;}
+  .device-text{flex:1;}
+  .device-label{font-family:var(--font-head);font-size:14px;color:var(--ink);}
+  .device-sub{font-size:10.5px;color:var(--muted);margin-top:2px;}
+  .device-tag{
+    font-family:var(--font-head);
+    font-size:11px;
+    color:var(--bg);
+    background:var(--muted);
+    width:20px;height:20px;
+    border-radius:3px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .device.selected .device-tag{background:var(--cyan);}
+  .device.done .device-tag{background:var(--ok);}
+  .check{display:none;color:var(--ok);font-family:var(--font-head);font-size:16px;}
+  .device.done .check{display:block;}
+  .device.done .device-tag{display:none;}
+
+  .feedback-row{
+    margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .msg{
+    font-size:13px;
+    min-height:18px;
+    color:var(--muted);
+  }
+  .msg.ok{color:var(--ok);}
+  .msg.bad{color:var(--bad);}
+
+  .progress{
+    flex:1;
+    min-width:160px;
+    height:6px;
+    background:#1B2A42;
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--cyan), var(--ok));
+    transition:width .35s ease;
+  }
+
+  button.reset{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink);
+    background:transparent;
+    border:1px solid var(--panel-line);
+    padding:8px 14px;
+    border-radius:3px;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  button.reset:hover{border-color:var(--cyan); color:var(--cyan);}
+
+  .done-banner{
+    display:none;
+    margin-top:22px;
+    border:1px solid var(--ok);
+    background:var(--ok-dim);
+    border-radius:6px;
+    padding:16px 18px;
+    font-family:var(--font-head);
+    color:var(--ok);
+    font-size:15px;
+  }
+  .done-banner.show{display:block;}
+
+  .hint{
+    font-size:10.5px;
+    color:var(--muted);
+    margin-top:14px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Thực hành cắm cổng máy tính</h1>
+      <p class="sub">Chọn một thiết bị bên phải, rồi bấm vào cổng bạn nghĩ là đúng trên mặt sau máy tính. Cắm sai không sao — cứ thử lại.</p>
+    </div>
+    <div class="score">Đã cắm đúng <b id="scoreNum">0</b>/6</div>
+  </header>
+
+  <div class="stage">
+
+    <div class="panel-box">
+      <p class="panel-title">MẶT SAU MÁY TÍNH</p>
+      <div class="backpanel" id="backpanel"></div>
+      <p class="hint" id="tooltipLine">Chạm/di chuột vào một cổng để xem tên đầy đủ của nó.</p>
+    </div>
+
+    <div class="panel-box">
+      <p class="panel-title">THIẾT BỊ CẦN CẮM</p>
+      <div class="devices" id="deviceList"></div>
+    </div>
+
+  </div>
+
+  <div class="feedback-row">
+    <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="reset" id="resetBtn">↺ Làm lại</button>
+  </div>
+  <p class="msg" id="msg"></p>
+
+  <div class="done-banner" id="doneBanner">✓ Hoàn thành! Bạn đã cắm đúng tất cả 6 thiết bị vào đúng cổng.</div>
+
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function svg(children, vb="0 0 40 40"){
+  const s = document.createElementNS(NS,"svg");
+  s.setAttribute("viewBox", vb);
+  s.setAttribute("width","100%"); s.setAttribute("height","100%");
+  s.innerHTML = children;
+  return s;
+}
+
+// ---------- PORT DEFINITIONS ----------
+// Images expected at images/cong-1.png ... images/cong-8.png (same order as your folder)
+const PORTS = [
+  { id:1, name:"Line Out (Loa)",              short:"Loa",       img:"images/cong-1.png" },
+  { id:2, name:"Line In",                     short:"Line In",   img:"images/cong-2.png" },
+  { id:3, name:"HDMI",                        short:"HDMI",      img:"images/cong-3.png" },
+  { id:4, name:"Headphone (Tai nghe)",        short:"Tai nghe",  img:"images/cong-4.png" },
+  { id:5, name:"Microphone (Mic)",            short:"Mic",       img:"images/cong-5.png" },
+  { id:6, name:"LAN / Ethernet (RJ45)",       short:"LAN",       img:"images/cong-6.png" },
+  { id:7, name:"USB",                         short:"USB",       img:"images/cong-7.png" },
+  { id:8, name:"USB",                         short:"USB",       img:"images/cong-7.png" },
+  { id:9, name:"Nguồn điện (AC Power)",       short:"Nguồn",     img:"images/cong-8.png" },
+];
+
+// ---------- DEVICE DEFINITIONS ----------
+// Images expected at images/ban-phim.png, mang-lan.png, chuot.png,
+// day-mang-hinh.png, tai-nghe.png, day-nguon.png
+const DEVICES = [
+  { id:"a", label:"Bàn phím",              sub:"Keyboard",         correct:[7,8],   img:"images/ban-phim.png" },
+  { id:"b", label:"Dây mạng LAN",          sub:"Ethernet cable",   correct:[6],   img:"images/mang-lan.png" },
+  { id:"c", label:"Chuột",                 sub:"Mouse",            correct:[7,8],   img:"images/chuot.png" },
+  { id:"d", label:"Cáp màn hình (HDMI)",   sub:"Display cable",    correct:[3],   img:"images/day-mang-hinh.png" },
+  { id:"e", label:"Tai nghe / Audio 3.5mm",sub:"Headphone cable",  correct:[1,4], img:"images/tai-nghe.png" },
+  { id:"f", label:"Dây nguồn",             sub:"Power cable",      correct:[9],   img:"images/day-nguon.png" },
+];
+
+// shuffle devices for practice order
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let deviceOrder = shuffle(DEVICES);
+let selectedDeviceId = null;
+let solvedCount = 0;
+const solvedPorts = {}; // portId -> deviceId
+
+const backpanel = document.getElementById("backpanel");
+const deviceList = document.getElementById("deviceList");
+const msgEl = document.getElementById("msg");
+const scoreNum = document.getElementById("scoreNum");
+const progressFill = document.getElementById("progressFill");
+const doneBanner = document.getElementById("doneBanner");
+const tooltipLine = document.getElementById("tooltipLine");
+
+function renderPorts(){
+  backpanel.innerHTML = "";
+  PORTS.forEach(p=>{
+    const el = document.createElement("div");
+    el.className = "port";
+    el.dataset.port = p.id;
+    el.innerHTML = `
+      <span class="port-num">${p.id}</span>
+      <div class="port-icon"></div>
+      <div class="port-label">${p.short}</div>
+    `;
+    const pImg = document.createElement("img");
+    pImg.src = p.img;
+    pImg.alt = p.name;
+    pImg.onerror = ()=>{ el.querySelector(".port-icon").innerHTML = `<span style="font-size:9px;color:var(--bad)">ảnh thiếu</span>`; };
+    el.querySelector(".port-icon").appendChild(pImg);
+    el.addEventListener("mouseenter", ()=>{ tooltipLine.textContent = `Cổng ${p.id}: ${p.name}`; });
+    el.addEventListener("mouseleave", ()=>{ tooltipLine.textContent = "Chạm/di chuột vào một cổng để xem tên đầy đủ của nó."; });
+    el.addEventListener("click", ()=> tryPlug(p.id, el));
+    backpanel.appendChild(el);
+  });
+}
+
+function renderDevices(){
+  deviceList.innerHTML = "";
+  deviceOrder.forEach(d=>{
+    const el = document.createElement("div");
+    el.className = "device";
+    el.dataset.device = d.id;
+    el.innerHTML = `
+      <div class="device-icon"></div>
+      <div class="device-text">
+        <div class="device-label">${d.label}</div>
+        <div class="device-sub">${d.sub}</div>
+      </div>
+      <div class="device-tag">${d.id}</div>
+      <div class="check">✓</div>
+    `;
+    const dImg = document.createElement("img");
+    dImg.src = d.img;
+    dImg.alt = d.label;
+    dImg.onerror = ()=>{ el.querySelector(".device-icon").innerHTML = `<span style="font-size:9px;color:var(--bad)">ảnh thiếu</span>`; };
+    el.querySelector(".device-icon").appendChild(dImg);
+    el.addEventListener("click", ()=> selectDevice(d.id, el));
+    deviceList.appendChild(el);
+  });
+}
+
+function selectDevice(id, el){
+  if(el.classList.contains("done")) return;
+  document.querySelectorAll(".device").forEach(x=>x.classList.remove("selected"));
+  if(selectedDeviceId === id){
+    selectedDeviceId = null;
+    msgEl.textContent = "";
+    msgEl.className = "msg";
+    return;
+  }
+  selectedDeviceId = id;
+  el.classList.add("selected");
+  const d = DEVICES.find(x=>x.id===id);
+  msgEl.textContent = `Đã chọn "${d.label}" — bây giờ bấm vào cổng bạn nghĩ là đúng.`;
+  msgEl.className = "msg";
+}
+
+function tryPlug(portId, portEl){
+  if(!selectedDeviceId){
+    msgEl.textContent = "Hãy chọn một thiết bị trước đã.";
+    msgEl.className = "msg bad";
+    return;
+  }
+  if(solvedPorts[portId]){
+    msgEl.textContent = "Cổng này đã có thiết bị khác cắm vào rồi.";
+    msgEl.className = "msg bad";
+    return;
+  }
+  const d = DEVICES.find(x=>x.id===selectedDeviceId);
+  if(d.correct.includes(portId)){
+    portEl.classList.add("correct");
+    portEl.querySelector(".port-label").textContent = d.label;
+    solvedPorts[portId] = d.id;
+    const deviceEl = document.querySelector(`.device[data-device="${d.id}"]`);
+    deviceEl.classList.remove("selected");
+    deviceEl.classList.add("done");
+    solvedCount++;
+    scoreNum.textContent = solvedCount;
+    progressFill.style.width = (solvedCount/6*100)+"%";
+    msgEl.textContent = `Chính xác! "${d.label}" cắm vào cổng ${portId} (${PORTS.find(p=>p.id===portId).name}).`;
+    msgEl.className = "msg ok";
+    selectedDeviceId = null;
+    if(solvedCount === 6){
+      doneBanner.classList.add("show");
+      msgEl.textContent = "";
+    }
+  } else {
+    portEl.classList.add("shake");
+    setTimeout(()=>portEl.classList.remove("shake"), 380);
+    msgEl.textContent = `Chưa đúng — "${d.label}" không cắm vào cổng ${portId}. Thử cổng khác xem.`;
+    msgEl.className = "msg bad";
+  }
+}
+
+function reset(){
+  deviceOrder = shuffle(DEVICES);
+  selectedDeviceId = null;
+  solvedCount = 0;
+  Object.keys(solvedPorts).forEach(k=>delete solvedPorts[k]);
+  scoreNum.textContent = 0;
+  progressFill.style.width = "0%";
+  doneBanner.classList.remove("show");
+  msgEl.textContent = "";
+  msgEl.className = "msg";
+  renderPorts();
+  renderDevices();
+}
+
+document.getElementById("resetBtn").addEventListener("click", reset);
+
+renderPorts();
+renderDevices();
+</script>
+</body>
+</html>
