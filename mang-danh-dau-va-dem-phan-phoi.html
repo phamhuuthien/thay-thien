@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mảng đánh dấu & Đếm phân phối</title>
+<style>
+:root{
+  --bg:#12161c; --surface:#1b212b; --surface2:#232b37; --text:#e8ecf1; --muted:#8b98a8;
+  --border:#2a313d; --amber:#f2a94b; --amber-dim:#4a3a22; --teal:#4fb3a9; --teal-dim:#1f3d3a;
+  --accent:var(--amber); --accent-dim:var(--amber-dim);
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+}
+:root[data-theme="light"]{ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{min-height:100%;line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding:36px 20px 64px}
+header{margin-bottom:28px}
+h1{font-size:1.7rem;font-weight:700;margin:0 0 8px;letter-spacing:-0.01em}
+.sub{color:var(--muted);font-size:0.98rem;max-width:62ch;margin:0}
+.tabs{display:flex;gap:8px;margin:26px 0 20px;border-bottom:1px solid var(--border)}
+.tab{flex:1;background:none;border:none;color:var(--muted);font-size:0.95rem;font-weight:600;padding:12px 6px;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card + .card{margin-top:16px}
+.card h2{font-size:1.05rem;margin:0 0 6px}
+.card p{color:var(--muted);font-size:0.92rem;margin:0 0 14px}
+.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text]{flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.92rem}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:9px 14px;font-size:0.88rem;font-weight:600}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#14181f;border-color:var(--accent)}
+.row-label{font-size:0.78rem;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px}
+.cell{flex:0 0 auto;min-width:40px;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.cell .idx{font-size:0.68rem;color:var(--muted);background:var(--surface2);padding:2px 0;font-family:ui-monospace,monospace}
+.cell .val{font-family:ui-monospace,monospace;font-size:0.95rem;padding:7px 6px;background:var(--surface)}
+.cell.hi .val{background:var(--accent);color:#14181f;font-weight:700}
+.cell.set .val{background:var(--accent-dim);color:var(--accent)}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.controls .spacer{flex:1}
+.step-count{font-size:0.82rem;color:var(--muted);font-family:ui-monospace,monospace}
+.log{margin-top:14px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:11px 14px;font-size:0.9rem;min-height:20px}
+.speed{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--muted)}
+input[type=range]{accent-color:var(--accent)}
+.result{margin-top:12px;font-size:0.9rem;color:var(--accent);font-family:ui-monospace,monospace;word-break:break-word}
+footer{margin-top:30px;color:var(--muted);font-size:0.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Mảng đánh dấu & Đếm phân phối</h1>
+  <p class="sub">Chạy từng bước để xem hai kỹ thuật xử lý mảng hoạt động như thế nào bên trong. Sửa dãy số và bấm "Dựng lại" để thử ví dụ của riêng bạn.</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="mark">Mảng đánh dấu</button>
+  <button class="tab" data-tab="count">Đếm phân phối</button>
+</div>
+
+<div class="panel active" id="panel-mark">
+  <div class="card">
+    <h2>Đếm số giá trị khác nhau</h2>
+    <p>Mỗi khi gặp giá trị x trong mảng A, ta bật mark[x] = 1. Cuối cùng chỉ cần đếm bao nhiêu ô trong mark có giá trị 1.</p>
+    <div class="input-row">
+      <input type="text" id="mark-input" value="3, 1, 4, 1, 5, 3, 2">
+      <button id="mark-build">Dựng lại</button>
+    </div>
+    <div class="row-label">Mảng A (đang đọc)</div>
+    <div class="strip" id="mark-arr"></div>
+    <div class="row-label">Mảng đánh dấu (mark[])</div>
+    <div class="strip" id="mark-mark"></div>
+    <div class="log" id="mark-log">Bấm ▶ để bắt đầu.</div>
+    <div class="result" id="mark-result"></div>
+    <div class="controls">
+      <button id="mark-reset">⟲ Đầu</button>
+      <button id="mark-prev">◀ Trước</button>
+      <button id="mark-play" class="btn-accent">▶ Chạy</button>
+      <button id="mark-next">Tiếp ▶</button>
+      <span class="step-count" id="mark-count-lbl"></span>
+      <span class="spacer"></span>
+      <span class="speed">Tốc độ <input type="range" id="mark-speed" min="150" max="1200" value="500"></span>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-count">
+  <div class="card">
+    <h2>Đếm tần suất xuất hiện</h2>
+    <p>Mỗi khi gặp giá trị x, ta tăng đếm[x] thêm 1. Cuối cùng quét đếm[] theo thứ tự chỉ số để in tần suất từng giá trị.</p>
+    <div class="input-row">
+      <input type="text" id="count-input" value="3, 1, 3, 0, 2, 4, 1, 14, 3, 2">
+      <button id="count-build">Dựng lại</button>
+    </div>
+    <div class="row-label">Mảng A (đang đọc)</div>
+    <div class="strip" id="count-arr"></div>
+    <div class="row-label">Mảng đếm (count[])</div>
+    <div class="strip" id="count-mark"></div>
+    <div class="log" id="count-log">Bấm ▶ để bắt đầu.</div>
+    <div class="result" id="count-result"></div>
+    <div class="controls">
+      <button id="count-reset">⟲ Đầu</button>
+      <button id="count-prev">◀ Trước</button>
+      <button id="count-play" class="btn-accent">▶ Chạy</button>
+      <button id="count-next">Tiếp ▶</button>
+      <span class="step-count" id="count-count-lbl"></span>
+      <span class="spacer"></span>
+      <span class="speed">Tốc độ <input type="range" id="count-speed" min="150" max="1200" value="500"></span>
+    </div>
+  </div>
+</div>
+
+
+<div id="site-footer"></div>
+</div>
+
+<script>
+function buildFrames(arr, isCount){
+  const maxVal = Math.max(...arr, 0);
+  const size = maxVal + 1;
+  const state = new Array(size).fill(0);
+  const frames = [{inputIdx:-1, markIdx:-1, mark:state.slice(), log:'Khởi tạo mảng '+(isCount?'đếm':'đánh dấu')+' gồm '+size+' ô, tất cả bằng 0.'}];
+  arr.forEach((v,i)=>{
+    frames.push({inputIdx:i, markIdx:-1, mark:state.slice(), log:'Đọc phần tử A['+i+'] = '+v+'.'});
+    if(isCount) state[v]++; else state[v]=1;
+    frames.push({inputIdx:i, markIdx:v, mark:state.slice(), log: isCount? ('Tăng đếm['+v+'] lên '+state[v]+'.') : ('Đánh dấu mark['+v+'] = 1.')});
+  });
+  const results=[]; let distinct=0;
+  for(let idx=0; idx<size; idx++){
+    const has = isCount ? state[idx] > 0 : state[idx] === 1;
+    frames.push({inputIdx:-1, markIdx:idx, mark:state.slice(), log:'Quét chỉ số '+idx+': '+(has ? (isCount? ('xuất hiện '+state[idx]+' lần.') : 'có xuất hiện.') : 'không xuất hiện, bỏ qua.')});
+    if(has){ distinct++; results.push(isCount ? (idx+' → '+state[idx]+' lần') : String(idx)); }
+  }
+  frames.push({inputIdx:-1, markIdx:-1, mark:state.slice(), done:true,
+    log: isCount ? 'Hoàn tất quét.' : ('Hoàn tất. Có '+distinct+' giá trị khác nhau.'),
+    result: isCount ? ('Tần suất: '+results.join(', ')) : ('Các giá trị: '+results.join(', '))});
+  return frames;
+}
+
+function makeEngine(prefix, isCount){
+  const el = id => document.getElementById(prefix+'-'+id);
+  let arr = [], frames = [], step = 0, timer = null;
+
+  function parseInput(){
+    const raw = el('input').value.split(/[,\s]+/).filter(Boolean).map(Number).filter(n=>!isNaN(n) && n>=0);
+    return raw.length ? raw.slice(0,40).map(n=>Math.min(n,60)) : [0];
+  }
+  function build(){
+    pause();
+    arr = parseInput();
+    frames = buildFrames(arr, isCount);
+    step = 0;
+    render();
+  }
+  function render(){
+    const f = frames[step];
+    el('arr').innerHTML = arr.map((v,i)=>
+      '<div class="cell'+(i===f.inputIdx?' hi':'')+'"><div class="idx">A['+i+']</div><div class="val">'+v+'</div></div>').join('');
+    el('mark').innerHTML = f.mark.map((v,i)=>
+      '<div class="cell'+(i===f.markIdx?' hi':(v?' set':''))+'"><div class="idx">'+i+'</div><div class="val">'+v+'</div></div>').join('');
+    el('log').textContent = f.log;
+    el('result').textContent = f.result || '';
+    el('count-lbl').textContent = 'Bước '+(step+1)+' / '+frames.length;
+    el('prev').disabled = step===0;
+    el('next').disabled = step===frames.length-1;
+    el('play').textContent = timer ? '⏸ Dừng' : '▶ Chạy';
+  }
+  function next(){ if(step<frames.length-1){ step++; render(); } else pause(); }
+  function prev(){ if(step>0){ step--; render(); } }
+  function reset(){ pause(); step=0; render(); }
+  function play(){
+    if(timer){ pause(); return; }
+    if(step>=frames.length-1) step=0;
+    timer = setInterval(()=>{ if(step>=frames.length-1) pause(); else next(); }, +el('speed').value);
+    render();
+  }
+  function pause(){ if(timer){ clearInterval(timer); timer=null; render(); } }
+
+  el('build').addEventListener('click', build);
+  el('next').addEventListener('click', ()=>{pause(); next();});
+  el('prev').addEventListener('click', ()=>{pause(); prev();});
+  el('reset').addEventListener('click', reset);
+  el('play').addEventListener('click', play);
+  el('input').addEventListener('keydown', e=>{ if(e.key==='Enter') build(); });
+
+  build();
+}
+
+makeEngine('mark', false);
+makeEngine('count', true);
+
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    document.documentElement.style.setProperty('--accent', btn.dataset.tab==='count' ? 'var(--teal)' : 'var(--amber)');
+    document.documentElement.style.setProperty('--accent-dim', btn.dataset.tab==='count' ? 'var(--teal-dim)' : 'var(--amber-dim)');
+  });
+});
+</script>
+</body>
+</html>
