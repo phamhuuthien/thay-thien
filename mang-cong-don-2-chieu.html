@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mảng cộng dồn 2 chiều</title>
+<style>
+:root{
+  --bg:#12161c; --surface:#1b212b; --surface2:#232b37; --text:#e8ecf1; --muted:#8b98a8;
+  --border:#2a313d; --accent:#5fb87a; --accent-dim:#1f3a29;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+}
+:root[data-theme="light"]{ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{min-height:100%;line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding:36px 20px 64px}
+header{margin-bottom:28px}
+h1{font-size:1.7rem;font-weight:700;margin:0 0 8px;letter-spacing:-0.01em}
+.sub{color:var(--muted);font-size:0.98rem;max-width:66ch;margin:0}
+h3{font-size:1.15rem;margin:34px 0 4px}
+.section-sub{color:var(--muted);font-size:0.9rem;margin:0 0 14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card + .card{margin-top:16px}
+.card h2{font-size:1.05rem;margin:0 0 6px}
+.card p{color:var(--muted);font-size:0.92rem;margin:0 0 14px}
+.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+textarea{width:100%;resize:vertical;min-height:86px;line-height:1.6;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.9rem}
+input[type=text]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.92rem;width:64px}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:9px 14px;font-size:0.88rem;font-weight:600}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#0f1712;border-color:var(--accent)}
+.row-label{font-size:0.78rem;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.grid-wrap{overflow-x:auto;padding:4px 2px 10px}
+.g2d{border-collapse:collapse;font-family:ui-monospace,monospace;font-size:0.85rem}
+.g2d th{color:var(--muted);font-weight:600;padding:5px 8px;background:var(--surface2)}
+.g2d td{border:1px solid var(--border);padding:6px 9px;text-align:center;background:var(--surface);min-width:30px}
+.g2d td.hi{background:var(--accent);color:#0f1712;font-weight:700}
+.g2d td.set{background:var(--accent-dim);color:var(--accent)}
+.g2d td.ref{outline:2px dashed var(--accent);outline-offset:-2px}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.controls .spacer{flex:1}
+.step-count{font-size:0.82rem;color:var(--muted);font-family:ui-monospace,monospace}
+.log{margin-top:14px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:11px 14px;font-size:0.9rem;min-height:20px}
+.speed{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--muted)}
+input[type=range]{accent-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:0.75rem;color:var(--muted)}
+.formula{margin-top:12px;font-size:0.92rem;font-family:ui-monospace,monospace;background:var(--surface2);border-radius:7px;padding:12px 14px}
+.formula b{color:var(--accent)}
+.err{color:#e0685f;font-size:0.85rem;margin-top:8px}
+.best{font-size:0.85rem;color:var(--accent);font-family:ui-monospace,monospace;font-weight:700}
+footer{margin-top:30px;color:var(--muted);font-size:0.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Mảng cộng dồn 2 chiều</h1>
+  <p class="sub">F(i,j) = F(i−1,j) + F(i,j−1) − F(i−1,j−1) + A(i,j). Xây một lần bảng F rồi trả lời mỗi truy vấn tổng hình chữ nhật trong O(1), thay vì duyệt cả vùng.</p>
+</header>
+
+<div class="card">
+  <h2>Ma trận đầu vào</h2>
+  <p>Mỗi dòng là một hàng, các số cách nhau bởi khoảng trắng. Dùng chung cho cả xây dựng và truy vấn bên dưới.</p>
+  <textarea id="mat-input">0 -2 -7 0
+9 2 -6 2
+-4 1 -4 1
+-1 8 0 -2</textarea>
+  <div class="input-row" style="margin-top:10px"><button id="mat-build" class="btn-accent">Dựng lại tất cả</button></div>
+</div>
+
+<div class="card">
+  <h2>Xây dựng bảng cộng dồn F</h2>
+  <div class="row-label">Ma trận A (1-indexed)</div>
+  <div class="grid-wrap"><div id="build-a"></div></div>
+  <div class="row-label">Bảng cộng dồn F (kèm hàng/cột 0)</div>
+  <div class="grid-wrap"><div id="build-f"></div></div>
+  <div class="log" id="build-log">Bấm ▶ để bắt đầu.</div>
+  <div class="controls">
+    <button id="build-reset">⟲ Đầu</button>
+    <button id="build-prev">◀ Trước</button>
+    <button id="build-play" class="btn-accent">▶ Chạy</button>
+    <button id="build-next">Tiếp ▶</button>
+    <span class="step-count" id="build-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="build-speed" min="100" max="1000" value="350"></span>
+  </div>
+</div>
+
+<h3>Truy vấn tổng hình chữ nhật</h3>
+<p class="section-sub">Sum = F(x2,y2) − F(x1−1,y2) − F(x2,y1−1) + F(x1−1,y1−1)</p>
+<div class="card">
+  <div class="input-row">
+    <div class="field"><label>x1</label><input type="text" id="q-x1" value="2"></div>
+    <div class="field"><label>y1</label><input type="text" id="q-y1" value="1"></div>
+    <div class="field"><label>x2</label><input type="text" id="q-x2" value="4"></div>
+    <div class="field"><label>y2</label><input type="text" id="q-y2" value="2"></div>
+    <button id="q-run" class="btn-accent">Tính tổng</button>
+  </div>
+  <div class="row-label">Vùng được chọn trên ma trận A</div>
+  <div class="grid-wrap"><div id="q-a"></div></div>
+  <div class="row-label">Bốn ô F dùng trong công thức</div>
+  <div class="grid-wrap"><div id="q-f"></div></div>
+  <div class="formula" id="q-formula"></div>
+  <div class="err" id="q-err"></div>
+</div>
+
+<h3>Tổng lớn nhất của một hình chữ nhật con bất kỳ</h3>
+<p class="section-sub">Thử mọi cặp hàng (top, bottom), nén thành mảng 1D rồi chạy Kadane để tìm đoạn cột tốt nhất trong dải hàng đó.</p>
+<div class="card">
+  <div class="row-label">Ma trận A — dải hàng [top, bottom] đang xét được tô sáng</div>
+  <div class="grid-wrap"><div id="mr-a"></div></div>
+  <div class="row-label">col_sum[] (tổng cột trong dải hàng hiện tại)</div>
+  <div class="grid-wrap" style="display:flex;gap:6px" id="mr-cs"></div>
+  <div class="log" id="mr-log">Bấm ▶ để bắt đầu.</div>
+  <div class="controls">
+    <button id="mr-reset">⟲ Đầu</button>
+    <button id="mr-prev">◀ Trước</button>
+    <button id="mr-play" class="btn-accent">▶ Chạy</button>
+    <button id="mr-next">Tiếp ▶</button>
+    <span class="step-count" id="mr-count-lbl"></span>
+    <span class="best" id="mr-best"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="mr-speed" min="60" max="800" value="200"></span>
+  </div>
+</div>
+
+<footer>Ma trận tối đa 8×8 để hiển thị trực quan. Với đề bài thật, kỹ thuật này vẫn chạy O(N×M) để xây bảng và O(1) mỗi truy vấn tổng vùng.</footer>
+</div>
+
+<script>
+function parseMatrix(str){
+  let rows = str.split('\n').map(r=>r.trim()).filter(Boolean)
+    .map(r=>r.split(/[,\s]+/).map(Number).filter(x=>!isNaN(x)));
+  if(!rows.length) rows = [[0]];
+  const m = Math.min(8, rows[0].length || 1);
+  rows = rows.slice(0,8).map(r=>{ const row=r.slice(0,m); while(row.length<m) row.push(0); return row; });
+  return rows;
+}
+function gridHTML(rows, cols, valFn, hiFn, clsFn, rowHeaderFrom, colHeaderFrom){
+  let h = '<table class="g2d"><tr><th></th>';
+  for(let j=0;j<cols;j++) h+='<th>'+(colHeaderFrom+j)+'</th>';
+  h+='</tr>';
+  for(let i=0;i<rows;i++){
+    h+='<tr><th>'+(rowHeaderFrom+i)+'</th>';
+    for(let j=0;j<cols;j++){
+      const cls = hiFn(i,j) ? 'hi' : (clsFn?clsFn(i,j):'');
+      h+='<td class="'+cls+'">'+valFn(i,j)+'</td>';
+    }
+    h+='</tr>';
+  }
+  return h+'</table>';
+}
+function makeStepper(prefix, renderFrame){
+  const el = id => document.getElementById(prefix+'-'+id);
+  let frames = [], step = 0, timer = null;
+  function setFrames(f){ pause(); frames = f; step = 0; render(); }
+  function render(){
+    if(!frames.length) return;
+    renderFrame(frames[step]);
+    el('count-lbl').textContent = 'Bước '+(step+1)+' / '+frames.length;
+    el('prev').disabled = step===0;
+    el('next').disabled = step===frames.length-1;
+    el('play').textContent = timer ? '⏸ Dừng' : '▶ Chạy';
+  }
+  function next(){ if(step<frames.length-1){ step++; render(); } else pause(); }
+  function prev(){ if(step>0){ step--; render(); } }
+  function reset(){ pause(); step=0; render(); }
+  function play(){
+    if(timer){ pause(); return; }
+    if(step>=frames.length-1) step=0;
+    timer = setInterval(()=>{ if(step>=frames.length-1) pause(); else next(); }, +el('speed').value);
+    render();
+  }
+  function pause(){ if(timer){ clearInterval(timer); timer=null; render(); } }
+  el('next').addEventListener('click', ()=>{pause(); next();});
+  el('prev').addEventListener('click', ()=>{pause(); prev();});
+  el('reset').addEventListener('click', reset);
+  el('play').addEventListener('click', play);
+  return { setFrames };
+}
+
+let A = [], N = 0, M = 0;
+
+// ---- build F step by step ----
+function buildFFrames(A,n,m){
+  const F = Array.from({length:n+1}, ()=>new Array(m+1).fill(0));
+  const frames = [{F:F.map(r=>r.slice()), hiA:null, hiF:null, ref:[], log:'Khởi tạo hàng 0 và cột 0 của F bằng 0.'}];
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      frames.push({F:F.map(r=>r.slice()), hiA:[i,j], hiF:null, ref:[], log:'Đọc A('+i+','+j+') = '+A[i-1][j-1]+'.'});
+      F[i][j] = F[i-1][j] + F[i][j-1] - F[i-1][j-1] + A[i-1][j-1];
+      frames.push({F:F.map(r=>r.slice()), hiA:[i,j], hiF:[i,j], ref:[[i-1,j],[i,j-1],[i-1,j-1]],
+        log:'F('+i+','+j+') = F('+(i-1)+','+j+') + F('+i+','+(j-1)+') − F('+(i-1)+','+(j-1)+') + A('+i+','+j+') = '+F[i][j]+'.'});
+    }
+  }
+  frames.push({F:F.map(r=>r.slice()), hiA:null, hiF:null, ref:[], done:true, log:'Hoàn tất bảng cộng dồn 2D.'});
+  return frames;
+}
+const buildStepper = makeStepper('build', f=>{
+  document.getElementById('build-a').innerHTML = gridHTML(N, M, (i,j)=>A[i][j], (i,j)=>f.hiA && f.hiA[0]===i+1 && f.hiA[1]===j+1, null, 1, 1);
+  document.getElementById('build-f').innerHTML = gridHTML(N+1, M+1, (i,j)=>f.F[i][j],
+    (i,j)=> f.hiF && f.hiF[0]===i && f.hiF[1]===j,
+    (i,j)=> f.ref.some(r=>r[0]===i&&r[1]===j) ? 'ref' : (f.done ? 'set' : ''), 0, 0);
+  document.getElementById('build-log').textContent = f.log;
+});
+
+// ---- rectangle query ----
+function computeF(A,n,m){
+  const F = Array.from({length:n+1}, ()=>new Array(m+1).fill(0));
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++)
+    F[i][j] = F[i-1][j] + F[i][j-1] - F[i-1][j-1] + A[i-1][j-1];
+  return F;
+}
+function runQuery(){
+  const x1=parseInt(document.getElementById('q-x1').value), y1=parseInt(document.getElementById('q-y1').value);
+  const x2=parseInt(document.getElementById('q-x2').value), y2=parseInt(document.getElementById('q-y2').value);
+  const errEl = document.getElementById('q-err'), fEl = document.getElementById('q-formula');
+  if([x1,y1,x2,y2].some(isNaN) || x1<1 || y1<1 || x2>N || y2>M || x1>x2 || y1>y2){
+    errEl.textContent = 'Cần 1 ≤ x1 ≤ x2 ≤ '+N+' và 1 ≤ y1 ≤ y2 ≤ '+M+'.';
+    document.getElementById('q-a').innerHTML=''; document.getElementById('q-f').innerHTML=''; fEl.textContent='';
+    return;
+  }
+  errEl.textContent = '';
+  const F = computeF(A,N,M);
+  const sum = F[x2][y2] - F[x1-1][y2] - F[x2][y1-1] + F[x1-1][y1-1];
+  document.getElementById('q-a').innerHTML = gridHTML(N, M, (i,j)=>A[i][j], ()=>false,
+    (i,j)=> (i+1>=x1 && i+1<=x2 && j+1>=y1 && j+1<=y2) ? 'set' : '', 1, 1);
+  const corners = [[x2,y2],[x1-1,y2],[x2,y1-1],[x1-1,y1-1]];
+  document.getElementById('q-f').innerHTML = gridHTML(N+1, M+1, (i,j)=>F[i][j],
+    (i,j)=> corners.some(c=>c[0]===i&&c[1]===j), null, 0, 0);
+  fEl.innerHTML = 'Sum = F('+x2+','+y2+') − F('+(x1-1)+','+y2+') − F('+x2+','+(y1-1)+') + F('+(x1-1)+','+(y1-1)+')<br>'
+    + '= '+F[x2][y2]+' − '+F[x1-1][y2]+' − '+F[x2][y1-1]+' + '+F[x1-1][y1-1]+' = <b>'+sum+'</b>';
+}
+
+// ---- max subrectangle sum (Kadane 2D) ----
+function buildMaxRectFrames(A,n){
+  const frames = [{colSum:new Array(n).fill(0), top:null, bottom:null, best:null, log:'Bắt đầu thử tất cả các cặp hàng (top, bottom).'}];
+  let ans = -Infinity, bestRect = null;
+  for(let top=1; top<=n; top++){
+    const colSum = new Array(n).fill(0);
+    frames.push({colSum:colSum.slice(), top, bottom:null, best:ans===-Infinity?null:ans, log:'Chọn hàng bắt đầu top = '+top+', đặt lại col_sum về 0.'});
+    for(let bottom=top; bottom<=n; bottom++){
+      for(let c=0;c<n;c++) colSum[c]+=A[bottom-1][c];
+      frames.push({colSum:colSum.slice(), top, bottom, best:ans===-Infinity?null:ans, log:'Nén hàng '+top+'..'+bottom+' thành col_sum = ['+colSum.join(', ')+'].'});
+      let cur=0, maxStep=-Infinity, curStart=0, bs=0, be=0;
+      for(let c=0;c<n;c++){
+        if(cur>0){ cur+=colSum[c]; } else { cur=colSum[c]; curStart=c; }
+        if(cur>maxStep){ maxStep=cur; bs=curStart; be=c; }
+      }
+      if(maxStep>ans){ ans=maxStep; bestRect={top,bottom,left:bs+1,right:be+1}; }
+      frames.push({colSum:colSum.slice(), top, bottom, best:ans, log:'Kadane trên col_sum: đoạn cột tốt nhất cho dải hàng này = '+maxStep+'.'});
+    }
+  }
+  frames.push({colSum:[], top:bestRect.top, bottom:bestRect.bottom, best:ans, done:true, bestRect,
+    log:'Kết quả: tổng lớn nhất = '+ans+', tại hàng ['+bestRect.top+'..'+bestRect.bottom+'], cột ['+bestRect.left+'..'+bestRect.right+'].'});
+  return frames;
+}
+const mrStepper = makeStepper('mr', f=>{
+  document.getElementById('mr-a').innerHTML = gridHTML(N, N, (i,j)=>A[i][j], ()=>false,
+    (i,j)=> (f.top!==null && i+1>=f.top && i+1<=f.bottom) ? 'set' : '', 1, 1);
+  document.getElementById('mr-cs').innerHTML = f.colSum.map((v,i)=>
+    '<div class="cell" style="min-width:40px;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden">'
+    +'<div class="idx" style="font-size:.68rem;color:var(--muted);background:var(--surface2);padding:2px 0;font-family:ui-monospace,monospace">'+i+'</div>'
+    +'<div class="val" style="font-family:ui-monospace,monospace;font-size:.95rem;padding:7px 6px;background:var(--surface)">'+v+'</div></div>').join('');
+  document.getElementById('mr-log').textContent = f.log;
+  document.getElementById('mr-best').textContent = f.best!==null && f.best!==undefined ? 'Tốt nhất hiện tại: '+f.best : '';
+});
+
+function rebuildAll(){
+  A = parseMatrix(document.getElementById('mat-input').value);
+  N = A.length; M = A[0].length;
+  buildStepper.setFrames(buildFFrames(A,N,M));
+  runQuery();
+  const nn = Math.min(N,M,8);
+  const square = A.slice(0,nn).map(r=>r.slice(0,nn));
+  mrStepper.setFrames(buildMaxRectFrames(square, nn));
+}
+document.getElementById('mat-build').addEventListener('click', rebuildAll);
+document.getElementById('q-run').addEventListener('click', runQuery);
+['q-x1','q-y1','q-x2','q-y2'].forEach(id=>document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') runQuery(); }));
+rebuildAll();
+</script>
+</body>
+</html>
