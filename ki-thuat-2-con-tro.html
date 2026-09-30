@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kỹ thuật hai con trỏ</title>
+<style>
+:root{
+  --bg:#12161c; --surface:#1b212b; --surface2:#232b37; --text:#e8ecf1; --muted:#8b98a8;
+  --border:#2a313d; --accent:#e2637a; --accent-dim:#3a2530; --p1:#e2637a; --p2:#5b9bd5;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+}
+:root[data-theme="light"]{ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{min-height:100%;line-height:1.5}
+.wrap{max-width:940px;margin:0 auto;padding:36px 20px 64px}
+header{margin-bottom:28px}
+h1{font-size:1.7rem;font-weight:700;margin:0 0 8px;letter-spacing:-0.01em}
+.sub{color:var(--muted);font-size:0.98rem;max-width:66ch;margin:0}
+h3{font-size:1.15rem;margin:34px 0 4px}
+.section-sub{color:var(--muted);font-size:0.9rem;margin:0 0 14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card p{color:var(--muted);font-size:0.92rem;margin:0 0 14px}
+.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+input[type=text]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.92rem}
+input.arr{flex:1;min-width:180px}
+input.num{width:70px}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:9px 14px;font-size:0.88rem;font-weight:600}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#1a1015;border-color:var(--accent)}
+.row-label{font-size:0.78rem;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px}
+.cell{flex:0 0 auto;min-width:42px;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.cell .idx{font-size:0.68rem;color:var(--muted);background:var(--surface2);padding:2px 0;font-family:ui-monospace,monospace}
+.cell .val{font-family:ui-monospace,monospace;font-size:0.95rem;padding:7px 6px;background:var(--surface)}
+.cell.p1 .val{background:var(--p1);color:#1a1015;font-weight:700}
+.cell.p2 .val{background:var(--p2);color:#0e1a24;font-weight:700}
+.cell.both .val{background:linear-gradient(90deg,var(--p1),var(--p2));color:#141414;font-weight:700}
+.cell.set .val{background:var(--accent-dim);color:var(--accent)}
+.legend{display:flex;gap:16px;font-size:0.78rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.legend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.controls .spacer{flex:1}
+.step-count{font-size:0.82rem;color:var(--muted);font-family:ui-monospace,monospace}
+.log{margin-top:14px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:11px 14px;font-size:0.9rem;min-height:20px}
+.speed{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--muted)}
+input[type=range]{accent-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:0.75rem;color:var(--muted)}
+.result{margin-top:12px;font-size:0.9rem;color:var(--accent);font-family:ui-monospace,monospace;word-break:break-word}
+footer{margin-top:30px;color:var(--muted);font-size:0.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Kỹ thuật hai con trỏ</h1>
+  <p class="sub">Ba biến thể quen thuộc: một con trỏ chậm và một con trỏ nhanh, hai con trỏ đi từ hai đầu vào giữa, và một cửa sổ trượt dọc theo dãy số.</p>
+</header>
+
+<h3>1. Slow &amp; Fast</h3>
+<p class="section-sub">Con trỏ fast luôn tăng mỗi vòng lặp; con trỏ slow chỉ tăng khi thỏa điều kiện. Ví dụ: loại bỏ phần tử trùng trong mảng đã sắp xếp.</p>
+<div class="card">
+  <div class="input-row">
+    <input type="text" class="arr" id="sf-input" value="1, 1, 2, 2, 2, 3, 4, 4">
+    <button id="sf-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--p1)"></span>slow</span><span><span class="dot" style="background:var(--p2)"></span>fast</span></div>
+  <div class="row-label">Mảng a[]</div>
+  <div class="strip" id="sf-arr"></div>
+  <div class="log" id="sf-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="sf-result"></div>
+  <div class="controls">
+    <button id="sf-reset">⟲ Đầu</button>
+    <button id="sf-prev">◀ Trước</button>
+    <button id="sf-play" class="btn-accent">▶ Chạy</button>
+    <button id="sf-next">Tiếp ▶</button>
+    <span class="step-count" id="sf-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="sf-speed" min="150" max="1200" value="500"></span>
+  </div>
+</div>
+
+<h3>2. Left &amp; Right Boundary</h3>
+<p class="section-sub">Hai con trỏ xuất phát từ hai đầu, tiến vào giữa. Ví dụ: tìm cặp số có tổng bằng target trong mảng đã sắp xếp.</p>
+<div class="card">
+  <div class="input-row">
+    <input type="text" class="arr" id="lr-input" value="2, 4, 6, 8, 11, 15">
+    <div class="field"><label>Target</label><input type="text" class="num" id="lr-target" value="14"></div>
+    <button id="lr-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--p1)"></span>left</span><span><span class="dot" style="background:var(--p2)"></span>right</span></div>
+  <div class="row-label">Mảng a[] (đã sắp xếp)</div>
+  <div class="strip" id="lr-arr"></div>
+  <div class="log" id="lr-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="lr-result"></div>
+  <div class="controls">
+    <button id="lr-reset">⟲ Đầu</button>
+    <button id="lr-prev">◀ Trước</button>
+    <button id="lr-play" class="btn-accent">▶ Chạy</button>
+    <button id="lr-next">Tiếp ▶</button>
+    <span class="step-count" id="lr-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="lr-speed" min="150" max="1200" value="500"></span>
+  </div>
+</div>
+
+<h3>3. Sliding Window</h3>
+<p class="section-sub">Một cửa sổ kích thước cố định K trượt dọc dãy số; tổng cửa sổ được cập nhật O(1) bằng cách trừ phần tử ra và cộng phần tử vào.</p>
+<div class="card">
+  <div class="input-row">
+    <input type="text" class="arr" id="sw-input" value="2, 1, 5, 1, 3, 2">
+    <div class="field"><label>K</label><input type="text" class="num" id="sw-k" value="3"></div>
+    <button id="sw-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--accent)"></span>cửa sổ hiện tại</span><span><span class="dot" style="background:var(--accent-dim);border:1px solid var(--border)"></span>cửa sổ tốt nhất</span></div>
+  <div class="row-label">Mảng a[]</div>
+  <div class="strip" id="sw-arr"></div>
+  <div class="log" id="sw-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="sw-result"></div>
+  <div class="controls">
+    <button id="sw-reset">⟲ Đầu</button>
+    <button id="sw-prev">◀ Trước</button>
+    <button id="sw-play" class="btn-accent">▶ Chạy</button>
+    <button id="sw-next">Tiếp ▶</button>
+    <span class="step-count" id="sw-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="sw-speed" min="150" max="1200" value="500"></span>
+  </div>
+</div>
+
+<footer>Giới hạn 30 phần tử để hiển thị trực quan. Cả ba kỹ thuật đều chạy O(N) — mỗi con trỏ chỉ đi qua dãy số tối đa một lần.</footer>
+</div>
+
+<script>
+function parseArr(str){
+  const raw = str.split(/[,\s]+/).filter(Boolean).map(Number).filter(n=>!isNaN(n));
+  return raw.length ? raw.slice(0,30) : [0];
+}
+function cellHTML(idx,val,cls){ return '<div class="cell '+(cls||'')+'"><div class="idx">'+idx+'</div><div class="val">'+val+'</div></div>'; }
+function makeStepper(prefix, renderFrame){
+  const el = id => document.getElementById(prefix+'-'+id);
+  let frames = [], step = 0, timer = null;
+  function setFrames(f){ pause(); frames = f; step = 0; render(); }
+  function render(){
+    if(!frames.length) return;
+    renderFrame(frames[step]);
+    el('count-lbl').textContent = 'Bước '+(step+1)+' / '+frames.length;
+    el('prev').disabled = step===0;
+    el('next').disabled = step===frames.length-1;
+    el('play').textContent = timer ? '⏸ Dừng' : '▶ Chạy';
+  }
+  function next(){ if(step<frames.length-1){ step++; render(); } else pause(); }
+  function prev(){ if(step>0){ step--; render(); } }
+  function reset(){ pause(); step=0; render(); }
+  function play(){
+    if(timer){ pause(); return; }
+    if(step>=frames.length-1) step=0;
+    timer = setInterval(()=>{ if(step>=frames.length-1) pause(); else next(); }, +el('speed').value);
+    render();
+  }
+  function pause(){ if(timer){ clearInterval(timer); timer=null; render(); } }
+  el('next').addEventListener('click', ()=>{pause(); next();});
+  el('prev').addEventListener('click', ()=>{pause(); prev();});
+  el('reset').addEventListener('click', reset);
+  el('play').addEventListener('click', play);
+  return { setFrames };
+}
+function ptrClass(i, p1, p2){
+  if(i===p1 && i===p2) return 'both';
+  if(i===p1) return 'p1';
+  if(i===p2) return 'p2';
+  return '';
+}
+
+// ---- 1. Slow & Fast: remove duplicates ----
+function buildSFFrames(arr){
+  const n = arr.length;
+  const a = arr.slice();
+  let slow = 0;
+  const frames = [{a:a.slice(), slow, fast:null, log:'Bắt đầu: slow = 0.'}];
+  for(let fast=1; fast<n; fast++){
+    frames.push({a:a.slice(), slow, fast, log:'fast = '+fast+': so sánh a[fast] = '+a[fast]+' với a[slow] = '+a[slow]+'.'});
+    if(a[fast] !== a[slow]){
+      slow++;
+      a[slow] = a[fast];
+      frames.push({a:a.slice(), slow, fast, log:'Khác giá trị → slow tăng lên '+slow+', gán a[slow] = '+a[fast]+'.'});
+    } else {
+      frames.push({a:a.slice(), slow, fast, log:'Trùng giá trị → slow đứng yên, bỏ qua.'});
+    }
+  }
+  frames.push({a:a.slice(), slow, fast:null, done:true, log:'Hoàn tất. '+ (slow+1) +' phần tử đầu là kết quả sau khi loại trùng.'});
+  return frames;
+}
+const sfStepper = makeStepper('sf', f=>{
+  document.getElementById('sf-arr').innerHTML = f.a.map((v,i)=>{
+    let cls = ptrClass(i, f.slow, f.fast);
+    if(f.done && i<=f.slow && !cls) cls='set';
+    return cellHTML(i, v, cls);
+  }).join('');
+  document.getElementById('sf-log').textContent = f.log;
+  document.getElementById('sf-result').textContent = f.done ? ('Kết quả: ['+f.a.slice(0,f.slow+1).join(', ')+']  (độ dài '+(f.slow+1)+')') : '';
+});
+function sfBuild(){ sfStepper.setFrames(buildSFFrames(parseArr(document.getElementById('sf-input').value))); }
+document.getElementById('sf-build').addEventListener('click', sfBuild);
+sfBuild();
+
+// ---- 2. Left & Right: two sum sorted ----
+function buildLRFrames(arr, target){
+  const a = arr.slice();
+  let left=0, right=a.length-1;
+  const frames = [{a:a.slice(), left, right, log:'Bắt đầu: left = 0, right = '+right+'.'}];
+  let found = null;
+  while(left<right){
+    const sum = a[left]+a[right];
+    if(sum===target){
+      found=[left,right];
+      frames.push({a:a.slice(), left, right, log:'a[left] + a[right] = '+a[left]+' + '+a[right]+' = '+sum+' = target → tìm thấy!', found:true});
+      break;
+    } else if(sum<target){
+      frames.push({a:a.slice(), left, right, log:'Tổng = '+sum+' < target ('+target+') → left tăng lên để tổng lớn hơn.'});
+      left++;
+    } else {
+      frames.push({a:a.slice(), left, right, log:'Tổng = '+sum+' > target ('+target+') → right giảm xuống để tổng nhỏ hơn.'});
+      right--;
+    }
+  }
+  frames.push({a:a.slice(), left:found?found[0]:-1, right:found?found[1]:-1, done:true, found:!!found,
+    log: found ? ('Hoàn tất. Cặp thỏa mãn: a['+found[0]+']='+a[found[0]]+' và a['+found[1]+']='+a[found[1]]+'.') : 'Hoàn tất. Không có cặp nào thỏa mãn.'});
+  return frames;
+}
+const lrStepper = makeStepper('lr', f=>{
+  document.getElementById('lr-arr').innerHTML = f.a.map((v,i)=>{
+    let cls = ptrClass(i, f.left, f.right);
+    if(f.done && f.found && (i===f.left||i===f.right)) cls = (cls||'')+' set';
+    return cellHTML(i, v, cls);
+  }).join('');
+  document.getElementById('lr-log').textContent = f.log;
+  document.getElementById('lr-result').textContent = f.done ? (f.found ? ('Kết quả: a['+f.left+']='+f.a[f.left]+', a['+f.right+']='+f.a[f.right]) : 'Không tìm thấy cặp phù hợp.') : '';
+});
+function lrBuild(){
+  const arr = parseArr(document.getElementById('lr-input').value).sort((x,y)=>x-y);
+  const target = parseFloat(document.getElementById('lr-target').value) || 0;
+  lrStepper.setFrames(buildLRFrames(arr, target));
+}
+document.getElementById('lr-build').addEventListener('click', lrBuild);
+lrBuild();
+
+// ---- 3. Sliding window ----
+function buildSWFrames(arr, k){
+  const n = arr.length;
+  const frames = [];
+  if(k<1 || k>n){ return [{a:arr.slice(), start:-1, end:-1, done:true, log:'K phải trong khoảng 1..'+n+'.'}]; }
+  let start=0, end=k-1;
+  let sum=0; for(let i=start;i<=end;i++) sum+=arr[i];
+  let best=sum, bestStart=start, bestEnd=end;
+  frames.push({a:arr.slice(), start, end, sum, best, bestStart, bestEnd, log:'Cửa sổ đầu tiên [0..'+end+'], tổng = '+sum+'.'});
+  while(end<n-1){
+    const newSum = sum - arr[start] + arr[end+1];
+    frames.push({a:arr.slice(), start, end, sum, best, bestStart, bestEnd,
+      log:'Trượt cửa sổ: tổng mới = tổng cũ − a['+start+'] + a['+(end+1)+'] = '+sum+' − '+arr[start]+' + '+arr[end+1]+' = '+newSum+'.'});
+    start++; end++; sum=newSum;
+    if(sum>best){ best=sum; bestStart=start; bestEnd=end; }
+    frames.push({a:arr.slice(), start, end, sum, best, bestStart, bestEnd,
+      log:'Cửa sổ ['+start+'..'+end+'], tổng = '+sum+(sum===best?' → tốt nhất mới!':'.')});
+  }
+  frames.push({a:arr.slice(), start:bestStart, end:bestEnd, sum:best, best, bestStart, bestEnd, done:true,
+    log:'Hoàn tất. Tổng lớn nhất = '+best+', tại cửa sổ ['+bestStart+'..'+bestEnd+'].'});
+  return frames;
+}
+const swStepper = makeStepper('sw', f=>{
+  document.getElementById('sw-arr').innerHTML = f.a.map((v,i)=>{
+    let cls = '';
+    if(i>=f.start && i<=f.end) cls = 'p1';
+    else if(f.done && i>=f.bestStart && i<=f.bestEnd) cls = 'set';
+    return cellHTML(i, v, cls);
+  }).join('');
+  document.getElementById('sw-log').textContent = f.log;
+  document.getElementById('sw-result').textContent = f.done ? ('Kết quả: tổng lớn nhất = '+f.best+' tại vị trí ['+f.bestStart+'..'+f.bestEnd+']') : '';
+});
+function swBuild(){
+  const arr = parseArr(document.getElementById('sw-input').value);
+  const k = parseInt(document.getElementById('sw-k').value) || 1;
+  swStepper.setFrames(buildSWFrames(arr, k));
+}
+document.getElementById('sw-build').addEventListener('click', swBuild);
+swBuild();
+</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sàng nguyên tố (Sieve of Eratosthenes)</title>
+<style>
+:root{
+  --bg:#12161c; --surface:#1b212b; --surface2:#232b37; --text:#e8ecf1; --muted:#8b98a8;
+  --border:#2a313d; --accent:#d1a53d; --accent-dim:#3a3018; --p1:#e2637a; --p2:#5b9bd5;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+}
+:root[data-theme="light"]{ --bg:#f6f4ef; --surface:#ffffff; --surface2:#eef0ee; --text:#1c2128; --muted:#5c6672; --border:#dcdfe3; }
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{min-height:100%;line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding:36px 20px 64px}
+header{margin-bottom:28px}
+h1{font-size:1.7rem;font-weight:700;margin:0 0 8px;letter-spacing:-0.01em}
+.sub{color:var(--muted);font-size:0.98rem;max-width:66ch;margin:0}
+h3{font-size:1.15rem;margin:34px 0 4px}
+.section-sub{color:var(--muted);font-size:0.9rem;margin:0 0 14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card p{color:var(--muted);font-size:0.92rem;margin:0 0 14px}
+.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+input[type=text]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.92rem;width:80px}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:9px 14px;font-size:0.88rem;font-weight:600}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:0.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:#1a1607;border-color:var(--accent)}
+.row-label{font-size:0.78rem;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;flex-wrap:wrap}
+.cell{flex:0 0 auto;min-width:40px;text-align:center;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.cell .idx{font-size:0.68rem;color:var(--muted);background:var(--surface2);padding:2px 0;font-family:ui-monospace,monospace}
+.cell .val{font-family:ui-monospace,monospace;font-size:0.95rem;padding:7px 6px;background:var(--surface)}
+.cell.p1 .val{background:var(--p1);color:#1a1015;font-weight:700}
+.cell.p2 .val{background:var(--p2);color:#0e1a24;font-weight:700}
+.ncell{flex:0 0 auto;min-width:36px;text-align:center;border:1px solid var(--border);border-radius:6px;padding:8px 4px;font-family:ui-monospace,monospace;font-size:.88rem;background:var(--surface)}
+.ncell.x{opacity:.42;text-decoration:line-through;background:var(--surface2)}
+.ncell.p1{background:var(--p1);color:#1a1015;font-weight:700}
+.ncell.p2{background:var(--p2);color:#0e1a24;font-weight:700}
+.ncell.prime{outline:2px solid var(--accent);color:var(--accent);font-weight:700}
+.legend{display:flex;gap:16px;font-size:0.78rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.legend .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.controls .spacer{flex:1}
+.step-count{font-size:0.82rem;color:var(--muted);font-family:ui-monospace,monospace}
+.log{margin-top:14px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:11px 14px;font-size:0.9rem;min-height:20px}
+.speed{display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--muted)}
+input[type=range]{accent-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:0.75rem;color:var(--muted)}
+.result{margin-top:12px;font-size:0.9rem;color:var(--accent);font-family:ui-monospace,monospace;word-break:break-word}
+.bignum{font-family:ui-monospace,monospace;font-size:1.6rem;font-weight:700;color:var(--accent)}
+footer{margin-top:30px;color:var(--muted);font-size:0.82rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Sàng nguyên tố (Eratosthenes)</h1>
+  <p class="sub">Thay vì kiểm tra từng số mất O(√N), sàng Eratosthenes loại bỏ hợp số theo bội số, cho toàn bộ đoạn 1..N chỉ trong O(N log log N).</p>
+</header>
+
+<div class="card">
+  <h2 style="font-size:1.05rem;margin:0 0 6px">Sàng nguyên tố cơ bản (1 → N)</h2>
+  <p>Coi mọi số là nguyên tố, sau đó với mỗi i từ 2 tới √N, nếu i còn là nguyên tố thì loại các bội của i bắt đầu từ i×i.</p>
+  <div class="input-row">
+    <div class="field"><label>N</label><input type="text" id="s1-n" value="30"></div>
+    <button id="s1-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--p1)"></span>i (đang xét)</span><span><span class="dot" style="background:var(--p2)"></span>j (đang loại)</span><span>gạch ngang = hợp số</span></div>
+  <div class="row-label">Các số từ 0 đến N</div>
+  <div class="strip" id="s1-strip"></div>
+  <div class="log" id="s1-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="s1-result"></div>
+  <div class="controls">
+    <button id="s1-reset">⟲ Đầu</button>
+    <button id="s1-prev">◀ Trước</button>
+    <button id="s1-play" class="btn-accent">▶ Chạy</button>
+    <button id="s1-next">Tiếp ▶</button>
+    <span class="step-count" id="s1-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="s1-speed" min="20" max="500" value="120"></span>
+  </div>
+</div>
+
+<h3>Sàng nguyên tố trên đoạn [L, R]</h3>
+<p class="section-sub">Chỉ cần mảng cỡ R−L+1. Với mỗi i từ 2 tới √R, loại bội của i bắt đầu từ bội nhỏ nhất ≥ L.</p>
+<div class="card">
+  <div class="input-row">
+    <div class="field"><label>L</label><input type="text" id="s2-l" value="10"></div>
+    <div class="field"><label>R</label><input type="text" id="s2-r" value="41"></div>
+    <button id="s2-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--p2)"></span>đang loại (j)</span><span>gạch ngang = hợp số</span></div>
+  <div class="row-label">Các số từ L đến R</div>
+  <div class="strip" id="s2-strip"></div>
+  <div class="log" id="s2-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="s2-result"></div>
+  <div class="controls">
+    <button id="s2-reset">⟲ Đầu</button>
+    <button id="s2-prev">◀ Trước</button>
+    <button id="s2-play" class="btn-accent">▶ Chạy</button>
+    <button id="s2-next">Tiếp ▶</button>
+    <span class="step-count" id="s2-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="s2-speed" min="20" max="500" value="120"></span>
+  </div>
+</div>
+
+<h3>Ứng dụng 1: SPF — ước nguyên tố nhỏ nhất</h3>
+<p class="section-sub">spf[i] mặc định = i. Khi i còn nguyên (là số nguyên tố), gán spf[j] = i cho các bội j chưa từng được gán.</p>
+<div class="card">
+  <div class="input-row">
+    <div class="field"><label>N</label><input type="text" id="s3-n" value="20"></div>
+    <button id="s3-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="legend"><span><span class="dot" style="background:var(--p1)"></span>i</span><span><span class="dot" style="background:var(--p2)"></span>j</span></div>
+  <div class="row-label">Mảng spf[i], i = 1..N</div>
+  <div class="strip" id="s3-strip"></div>
+  <div class="log" id="s3-log">Bấm ▶ để bắt đầu.</div>
+  <div class="controls">
+    <button id="s3-reset">⟲ Đầu</button>
+    <button id="s3-prev">◀ Trước</button>
+    <button id="s3-play" class="btn-accent">▶ Chạy</button>
+    <button id="s3-next">Tiếp ▶</button>
+    <span class="step-count" id="s3-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="s3-speed" min="20" max="500" value="120"></span>
+  </div>
+</div>
+
+<h3>Ứng dụng 2: Phân tích thừa số nguyên tố bằng SPF</h3>
+<p class="section-sub">Lấy ước nguyên tố nhỏ nhất của x, chia x cho ước đó, lặp lại tới khi x = 1. Với sàng SPF có sẵn, mỗi lần tra chỉ mất O(1); ở đây minh họa việc tìm SPF ngay tại chỗ cho một số bất kỳ.</p>
+<div class="card">
+  <div class="input-row">
+    <div class="field"><label>x</label><input type="text" id="s4-x" value="60"></div>
+    <button id="s4-build" class="btn-accent">Dựng lại</button>
+  </div>
+  <div class="row-label">Giá trị đang xét</div>
+  <div class="bignum" id="s4-cur">—</div>
+  <div class="row-label">Các thừa số đã tách được</div>
+  <div class="strip" id="s4-factors"></div>
+  <div class="log" id="s4-log">Bấm ▶ để bắt đầu.</div>
+  <div class="result" id="s4-result"></div>
+  <div class="controls">
+    <button id="s4-reset">⟲ Đầu</button>
+    <button id="s4-prev">◀ Trước</button>
+    <button id="s4-play" class="btn-accent">▶ Chạy</button>
+    <button id="s4-next">Tiếp ▶</button>
+    <span class="step-count" id="s4-count-lbl"></span>
+    <span class="spacer"></span>
+    <span class="speed">Tốc độ <input type="range" id="s4-speed" min="150" max="1200" value="500"></span>
+  </div>
+</div>
+
+<footer>N, R giới hạn ở mức nhỏ (vài trăm) để hiển thị trực quan. Với đề bài thật, sàng vẫn chạy O(N log log N) tới N ≤ 10⁷.</footer>
+</div>
+
+<script>
+function makeStepper(prefix, renderFrame){
+  const el = id => document.getElementById(prefix+'-'+id);
+  let frames = [], step = 0, timer = null;
+  function setFrames(f){ pause(); frames = f; step = 0; render(); }
+  function render(){
+    if(!frames.length) return;
+    renderFrame(frames[step]);
+    el('count-lbl').textContent = 'Bước '+(step+1)+' / '+frames.length;
+    el('prev').disabled = step===0;
+    el('next').disabled = step===frames.length-1;
+    el('play').textContent = timer ? '⏸ Dừng' : '▶ Chạy';
+  }
+  function next(){ if(step<frames.length-1){ step++; render(); } else pause(); }
+  function prev(){ if(step>0){ step--; render(); } }
+  function reset(){ pause(); step=0; render(); }
+  function play(){
+    if(timer){ pause(); return; }
+    if(step>=frames.length-1) step=0;
+    timer = setInterval(()=>{ if(step>=frames.length-1) pause(); else next(); }, +el('speed').value);
+    render();
+  }
+  function pause(){ if(timer){ clearInterval(timer); timer=null; render(); } }
+  el('next').addEventListener('click', ()=>{pause(); next();});
+  el('prev').addEventListener('click', ()=>{pause(); prev();});
+  el('reset').addEventListener('click', reset);
+  el('play').addEventListener('click', play);
+  return { setFrames };
+}
+function numCell(n, cls){ return '<div class="ncell '+(cls||'')+'">'+n+'</div>'; }
+function cellHTML(idx,val,cls){ return '<div class="cell '+(cls||'')+'"><div class="idx">'+idx+'</div><div class="val">'+val+'</div></div>'; }
+
+// ---- Card 1: sieve 0..N ----
+function buildSieveFrames(N){
+  const isPrime = new Array(N+1).fill(1);
+  isPrime[0]=0; if(N>=1) isPrime[1]=0;
+  const frames=[{isPrime:isPrime.slice(), i:null, j:null, log:'Khởi tạo: coi mọi số từ 0 đến '+N+' là nguyên tố, rồi loại 0 và 1.'}];
+  for(let i=2;i*i<=N;i++){
+    frames.push({isPrime:isPrime.slice(), i, j:null, log:'Xét i = '+i+'.'});
+    if(isPrime[i]){
+      frames.push({isPrime:isPrime.slice(), i, j:null, log:'i = '+i+' là số nguyên tố → loại bội của '+i+' bắt đầu từ '+i+'×'+i+' = '+(i*i)+'.'});
+      for(let j=i*i;j<=N;j+=i){
+        isPrime[j]=0;
+        frames.push({isPrime:isPrime.slice(), i, j, log:'Loại '+j+' (bội của '+i+').'});
+      }
+    } else {
+      frames.push({isPrime:isPrime.slice(), i, j:null, log:'i = '+i+' đã bị loại trước đó → bỏ qua.'});
+    }
+  }
+  const primes=[]; for(let k=2;k<=N;k++) if(isPrime[k]) primes.push(k);
+  frames.push({isPrime:isPrime.slice(), i:null, j:null, done:true, primes, log:'Hoàn tất. Có '+primes.length+' số nguyên tố trong ['+0+', '+N+'].'});
+  return frames;
+}
+const s1 = makeStepper('s1', f=>{
+  document.getElementById('s1-strip').innerHTML = f.isPrime.map((p,n)=>{
+    let cls = n===f.i ? 'p1' : (n===f.j ? 'p2' : (!p ? 'x' : (f.done && n>=2 ? 'prime' : '')));
+    return numCell(n, cls);
+  }).join('');
+  document.getElementById('s1-log').textContent = f.log;
+  document.getElementById('s1-result').textContent = f.done ? ('Các số nguyên tố: '+f.primes.join(', ')) : '';
+});
+function s1Build(){ const N = Math.max(2, Math.min(300, parseInt(document.getElementById('s1-n').value)||30)); s1.setFrames(buildSieveFrames(N)); }
+document.getElementById('s1-build').addEventListener('click', s1Build);
+s1Build();
+
+// ---- Card 2: segmented sieve [L,R] ----
+function buildSegSieveFrames(L,R){
+  const size = R-L+1;
+  const isPrime = new Array(size).fill(1);
+  const frames=[{isPrime:isPrime.slice(), j:null, log:'Khởi tạo mảng đánh dấu kích thước '+size+' cho đoạn ['+L+', '+R+'].'}];
+  const sq = Math.floor(Math.sqrt(R));
+  for(let i=2;i<=sq;i++){
+    const start = Math.max(i*i, Math.ceil(L/i)*i);
+    frames.push({isPrime:isPrime.slice(), j:null, log:'Xét i = '+i+', bội đầu tiên trong đoạn: '+start+(start>R?' (vượt R, bỏ qua).':'.')});
+    for(let j=start;j<=R;j+=i){
+      isPrime[j-L]=0;
+      frames.push({isPrime:isPrime.slice(), j, log:'Loại '+j+' (bội của '+i+').'});
+    }
+  }
+  const primes=[]; for(let k=Math.max(2,L);k<=R;k++) if(isPrime[k-L]) primes.push(k);
+  frames.push({isPrime:isPrime.slice(), j:null, done:true, primes, log:'Hoàn tất. Số nguyên tố trong ['+L+', '+R+']: '+(primes.length?primes.join(', '):'không có')+'.'});
+  return frames;
+}
+const s2 = makeStepper('s2', f=>{
+  const L = parseInt(document.getElementById('s2-l').value)||0;
+  document.getElementById('s2-strip').innerHTML = f.isPrime.map((p,k)=>{
+    const n = L+k;
+    let cls = (n===f.j) ? 'p2' : (!p ? 'x' : (f.done && n>=2 ? 'prime' : ''));
+    return numCell(n, cls);
+  }).join('');
+  document.getElementById('s2-log').textContent = f.log;
+  document.getElementById('s2-result').textContent = f.done ? ('Số nguyên tố: '+(f.primes.length?f.primes.join(', '):'không có')) : '';
+});
+function s2Build(){
+  let L = parseInt(document.getElementById('s2-l').value)||0;
+  let R = parseInt(document.getElementById('s2-r').value)||0;
+  if(R<L) [L,R]=[R,L];
+  if(R-L>200){ R = L+200; }
+  if(R>200000) R = 200000;
+  document.getElementById('s2-l').value=L; document.getElementById('s2-r').value=R;
+  s2.setFrames(buildSegSieveFrames(L,R));
+}
+document.getElementById('s2-build').addEventListener('click', s2Build);
+s2Build();
+
+// ---- Card 3: SPF sieve ----
+function buildSPFFrames(N){
+  const spf = new Array(N+1); for(let i=1;i<=N;i++) spf[i]=i;
+  const frames=[{spf:spf.slice(1), i:null, j:null, log:'Khởi tạo: spf[i] = i với mọi i.'}];
+  for(let i=2;i*i<=N;i++){
+    if(spf[i]===i){
+      frames.push({spf:spf.slice(1), i, j:null, log:'i = '+i+' là số nguyên tố (spf[i] = i) → gán SPF cho các bội chưa có.'});
+      for(let j=i*i;j<=N;j+=i){
+        if(spf[j]===j){ spf[j]=i; frames.push({spf:spf.slice(1), i, j, log:'spf['+j+'] = '+i+' (mới được gán).'}); }
+        else { frames.push({spf:spf.slice(1), i, j, log:'spf['+j+'] đã là '+spf[j]+' từ trước → bỏ qua.'}); }
+      }
+    } else {
+      frames.push({spf:spf.slice(1), i, j:null, log:'i = '+i+' không phải nguyên tố (spf[i] = '+spf[i]+') → bỏ qua.'});
+    }
+  }
+  frames.push({spf:spf.slice(1), i:null, j:null, done:true, log:'Hoàn tất bảng SPF cho 1..'+N+'.'});
+  return frames;
+}
+const s3 = makeStepper('s3', f=>{
+  document.getElementById('s3-strip').innerHTML = f.spf.map((v,idx0)=>{
+    const i = idx0+1;
+    return cellHTML(i, v, i===f.i?'p1':(i===f.j?'p2':''));
+  }).join('');
+  document.getElementById('s3-log').textContent = f.log;
+});
+function s3Build(){ const N = Math.max(2, Math.min(60, parseInt(document.getElementById('s3-n').value)||20)); s3.setFrames(buildSPFFrames(N)); }
+document.getElementById('s3-build').addEventListener('click', s3Build);
+s3Build();
+
+// ---- Card 4: factorization via SPF ----
+function smallestPF(n){ if(n%2===0) return 2; for(let i=3;i*i<=n;i+=2) if(n%i===0) return i; return n; }
+function buildFactorFrames(x){
+  let cur = x; const factors=[];
+  const frames=[{cur, factors:factors.slice(), log:'Bắt đầu phân tích '+x+'.'}];
+  while(cur>1){
+    const p = smallestPF(cur);
+    frames.push({cur, factors:factors.slice(), p, log:'Ước nguyên tố nhỏ nhất của '+cur+' là '+p+'.'});
+    cur = cur/p; factors.push(p);
+    frames.push({cur, factors:factors.slice(), log:'Chia cho '+p+' → còn lại '+cur+'.'});
+  }
+  frames.push({cur:1, factors:factors.slice(), done:true, log:'Hoàn tất: '+x+' = '+factors.join(' × ')+'.'});
+  return frames;
+}
+const s4 = makeStepper('s4', f=>{
+  document.getElementById('s4-cur').textContent = f.cur;
+  document.getElementById('s4-factors').innerHTML = f.factors.map(p=>numCell(p,'prime')).join('') || '<span style="color:var(--muted);font-size:.85rem">chưa có</span>';
+  document.getElementById('s4-log').textContent = f.log;
+  document.getElementById('s4-result').textContent = f.done ? (document.getElementById('s4-x').value+' = '+f.factors.join(' × ')) : '';
+});
+function s4Build(){
+  let x = parseInt(document.getElementById('s4-x').value);
+  if(isNaN(x) || x<2) x = 2;
+  if(x>1000000000) x = 1000000000;
+  s4.setFrames(buildFactorFrames(x));
+}
+document.getElementById('s4-build').addEventListener('click', s4Build);
+s4Build();
+</script>
+</body>
+</html>
