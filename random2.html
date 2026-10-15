@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vòng Quay Sứ Mệnh Học Tập 🚀 - Biệt Danh Bí Ẩn</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        gameYellow: '#FFC700',
+                        gamePink: '#FF4785',
+                        gamePurple: '#8B5CF6',
+                        gameCyan: '#06B6D4',
+                        gameGreen: '#10B981',
+                        gameDark: '#1E1B4B',
+                    },
+                    boxShadow: {
+                        'cartoon': '0px 8px 0px 0px rgba(0,0,0,0.25)',
+                        'cartoon-sm': '0px 4px 0px 0px rgba(0,0,0,0.25)',
+                        'cartoon-lg': '0px 12px 0px 0px rgba(0,0,0,0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #2e1065 0%, #4c1d95 35%, #831843 70%, #1e1b4b 100%);
+            background-attachment: fixed;
+            user-select: none;
+        }
+
+        h1, h2, h3, .font-fun {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Cartoon border style */
+        .cartoon-card {
+            background: #26164c;
+            border: 4px solid #4c2889;
+            box-shadow: 0 10px 0 #150930;
+            border-radius: 28px;
+        }
+
+        .cartoon-btn {
+            transition: all 0.1s ease;
+            box-shadow: 0 6px 0 #1b0c3d;
+        }
+        .cartoon-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1b0c3d;
+        }
+
+        /* Floating Animation */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+
+        /* 3D Card Flip Effects */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a855f7;
+            border-radius: 10px;
+            border: 2px solid #26164c;
+        }
+
+        /* Slot machine animation effect */
+        @keyframes slotBlur {
+            0% { filter: blur(0px); }
+            50% { filter: blur(3px); }
+            100% { filter: blur(0px); }
+        }
+        .slot-spinning {
+            animation: slotBlur 0.1s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white flex flex-col justify-between overflow-x-hidden relative">
+
+    <!-- Floating Background Decor -->
+    <div class="fixed top-12 left-8 text-4xl opacity-30 animate-float pointer-events-none">⭐</div>
+    <div class="fixed top-1/3 right-10 text-5xl opacity-30 animate-float pointer-events-none" style="animation-delay: 1s;">🎭</div>
+    <div class="fixed bottom-16 left-12 text-5xl opacity-30 animate-float pointer-events-none" style="animation-delay: 2s;">🎉</div>
+    <div class="fixed bottom-10 right-20 text-4xl opacity-30 animate-float pointer-events-none" style="animation-delay: 1.5s;">🎮</div>
+
+    <!-- Header / Navbar -->
+    <header class="py-4 px-6 z-20">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 bg-purple-900/60 backdrop-blur-md p-4 rounded-3xl border-4 border-purple-500/40 shadow-cartoon">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 border-4 border-yellow-200 flex items-center justify-center text-3xl shadow-cartoon-sm animate-bounce">
+                    🎭
+                </div>
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-400 to-cyan-300 tracking-wide drop-shadow-md">
+                        Random Picker Pro
+                    </h1>
+                    <div>
+                    <p class="text-xs text-slate-400">Ứng dụng quay số ngẫu nhiên thông minh & sống động</p>
+                    <p class="text-xs text-slate-400">Được phát triển bởi Phạm Hữu Thiện</p>
+                </div>
+                </div>
+            </div>
+
+            <!-- Quick Controls & Badges -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="bg-purple-950/80 px-4 py-2 rounded-2xl border-2 border-purple-400/50 flex items-center gap-2">
+                    <i class="fa-solid fa-users text-cyan-400"></i>
+                    <span class="text-xs text-purple-200 font-bold">Sĩ số:</span>
+                    <span id="studentCountBadge" class="bg-yellow-400 text-purple-950 px-2.5 py-0.5 rounded-xl font-extrabold text-sm">0</span>
+                </div>
+                <button onclick="toggleAudio()" id="soundBtn" class="cartoon-btn bg-pink-500 hover:bg-pink-400 text-white font-extrabold px-3.5 py-2 rounded-2xl border-2 border-pink-300 text-sm flex items-center gap-2">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 z-10 my-auto">
+        
+        <!-- LEFT PANEL: Student List & Nickname Config -->
+        <section class="lg:col-span-5 flex flex-col gap-5">
+            
+            <div class="cartoon-card p-5 flex flex-col gap-4">
+                <!-- Title & Header Actions -->
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-fun font-bold text-yellow-300 flex items-center gap-2">
+                        <i class="fa-solid fa-user-ninja text-pink-400"></i> Danh sách Học Sinh
+                    </h2>
+                    <div class="flex gap-2">
+                        <button onclick="shuffleStudents()" title="Trộn danh sách" class="cartoon-btn bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 border-2 border-cyan-200">
+                            <i class="fa-solid fa-shuffle"></i> Trộn
+                        </button>
+                        <button onclick="clearStudents()" title="Xóa hết" class="cartoon-btn bg-rose-500 hover:bg-rose-400 text-white px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 border-2 border-rose-300">
+                            <i class="fa-solid fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SPECIAL NICKNAME BUTTON -->
+                <button onclick="openNicknameModal()" class="cartoon-btn w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-fun font-extrabold text-sm rounded-2xl border-2 border-pink-300 flex items-center justify-center gap-2">
+                    <span class="text-xl">🎭</span> Cấu Hình / Nhập Biệt Danh Bí Ẩn
+                </button>
+
+                <!-- Classroom Presets -->
+                <div class="flex flex-wrap gap-2">
+                    <span class="text-xs text-purple-300 font-bold w-full">Mẫu sẵn có biệt danh:</span>
+                    <button onclick="loadPreset('funnyClass')" class="bg-purple-800/80 hover:bg-purple-700 text-purple-200 border border-purple-500/50 px-2.5 py-1 rounded-xl text-xs font-bold transition-all">
+                        🏫 Lớp Siêu Quậy (12 em)
+                    </button>
+                    <button onclick="loadPreset('superheroes')" class="bg-purple-800/80 hover:bg-purple-700 text-purple-200 border border-purple-500/50 px-2.5 py-1 rounded-xl text-xs font-bold transition-all">
+                        🦸 Biệt Đội Siêu Anh Hùng
+                    </button>
+                    <button onclick="loadPreset('animals')" class="bg-purple-800/80 hover:bg-purple-700 text-purple-200 border border-purple-500/50 px-2.5 py-1 rounded-xl text-xs font-bold transition-all">
+                        🐯 Động Vật Siêu Cấp
+                    </button>
+                </div>
+
+                <!-- Direct Input Textarea -->
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-xs font-bold text-purple-300">
+                        <span>Cú pháp: <code class="text-yellow-300 bg-purple-950 px-1 py-0.5 rounded">Tên Thật | Biệt Danh</code></span>
+                        <span id="nicknameStats" class="text-pink-400">Đã có biệt danh</span>
+                    </div>
+                    <textarea id="studentInput" rows="6" oninput="onInputChanged()" placeholder="Nhập danh sách học sinh...&#10;Nguyễn Văn An | ⚡ Chiến Thần Tốc Độ&#10;Trần Thị Bình | 👑 Trùm Cuối Lớp&#10;Lê Hoàng Cường | 🐉 Rồng Lửa Bí Ẩn" class="w-full bg-purple-950/80 border-3 border-purple-600/60 rounded-2xl p-3.5 text-sm font-semibold text-yellow-100 placeholder-purple-400/60 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all resize-none shadow-inner"></textarea>
+                </div>
+
+                <!-- Configuration Options -->
+                <div class="flex flex-col gap-3 pt-2 border-t-2 border-purple-800/60">
+                    <!-- Pick Count Setup -->
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-center text-xs font-bold">
+                            <span class="text-purple-200">Số lượng chọn cùng lúc:</span>
+                            <span id="pickDisplayBadge" class="text-yellow-300 font-extrabold text-sm">1 người</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="setPickCount(1)" id="pickBtn1" class="cartoon-btn py-2 rounded-xl font-black text-sm bg-yellow-400 text-purple-950 border-2 border-yellow-200">1</button>
+                            <button onclick="setPickCount(2)" id="pickBtn2" class="cartoon-btn py-2 rounded-xl font-black text-sm bg-purple-800 text-purple-200 border-2 border-purple-600">2</button>
+                            <button onclick="setPickCount(3)" id="pickBtn3" class="cartoon-btn py-2 rounded-xl font-black text-sm bg-purple-800 text-purple-200 border-2 border-purple-600">3</button>
+                            <input type="number" id="customPickInput" min="1" max="50" placeholder="N" oninput="setCustomPick(this.value)" class="w-full bg-purple-950 border-2 border-purple-600 rounded-xl text-center text-xs font-bold text-yellow-300 focus:outline-none focus:border-yellow-400">
+                        </div>
+                    </div>
+
+                    <!-- Auto Remove Toggle -->
+                    <label class="flex items-center justify-between bg-purple-950/50 p-2.5 rounded-2xl border border-purple-800 cursor-pointer">
+                        <span class="text-xs font-bold text-purple-200 flex items-center gap-2">
+                            <i class="fa-solid fa-user-slash text-pink-400"></i> Loại bỏ người đã trúng
+                        </span>
+                        <input type="checkbox" id="removeCheckbox" class="w-5 h-5 accent-yellow-400 rounded cursor-pointer">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Mode Selector Switcher -->
+            <div class="cartoon-card p-4 flex flex-col gap-3">
+                <span class="text-xs font-fun font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad"></i> Chọn giao diện quay
+                </span>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="switchMode('wheel')" id="modeWheelBtn" class="cartoon-btn bg-yellow-400 text-purple-950 border-2 border-yellow-200 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs">
+                        <span class="text-xl">🎯</span> Vòng Quay
+                    </button>
+                    <button onclick="switchMode('cards')" id="modeCardsBtn" class="cartoon-btn bg-purple-900 text-purple-300 border-2 border-purple-700 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs">
+                        <span class="text-xl">🃏</span> Thẻ Bài
+                    </button>
+                    <button onclick="switchMode('slot')" id="modeSlotBtn" class="cartoon-btn bg-purple-900 text-purple-300 border-2 border-purple-700 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs">
+                        <span class="text-xl">🎰</span> Máy Xèng
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: Animated Stage Area -->
+        <section class="lg:col-span-7 flex flex-col gap-5">
+            
+            <!-- STAGE BOARD -->
+            <div class="cartoon-card p-6 min-h-[440px] flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-purple-900/90 to-purple-950/90 border-4 border-purple-500/50 shadow-cartoon">
+                
+                <!-- Notice Banner -->
+                <div class="absolute top-3 left-1/2 -translate-x-1/2 bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 z-20">
+                    <i class="fa-solid fa-eye-slash"></i> Vòng quay CHỈ hiện Biệt Danh bí ẩn!
+                </div>
+
+                <!-- MODE 1: CANVAS WHEEL -->
+                <div id="wheelContainer" class="flex flex-col items-center justify-center relative w-full my-auto pt-6">
+                    <!-- Wheel Pointer Pin -->
+                    <div class="absolute top-2 z-20 text-4xl filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.5)] transform rotate-180 animate-bounce">
+                        🔻
+                    </div>
+                    <canvas id="wheelCanvas" width="360" height="360" class="max-w-full h-auto drop-shadow-2xl rounded-full border-4 border-yellow-400/80 bg-purple-950"></canvas>
+                </div>
+
+                <!-- MODE 2: MYSTERY CARDS -->
+                <div id="cardsContainer" class="hidden w-full flex-wrap justify-center items-center gap-4 my-auto py-6">
+                    <!-- Cards dynamically rendered -->
+                </div>
+
+                <!-- MODE 3: SLOT MACHINE -->
+                <div id="slotContainer" class="hidden w-full flex flex-col items-center justify-center gap-4 my-auto py-8">
+                    <div id="slotReels" class="flex flex-wrap justify-center gap-3">
+                        <!-- Reel items dynamically injected -->
+                    </div>
+                </div>
+
+                <!-- MAIN SPIN BUTTON -->
+                <div class="mt-6 z-20 w-full max-w-md">
+                    <button onclick="startPicker()" id="spinBtn" class="cartoon-btn w-full py-4 rounded-3xl bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 hover:from-yellow-300 hover:to-cyan-300 text-purple-950 font-fun font-black text-2xl tracking-wider border-4 border-yellow-200 shadow-cartoon flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95 transition-all">
+                        <i class="fa-solid fa-play text-2xl"></i> QUAY BIỆT DANH! 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- HISTORY / WINNER LIST -->
+            <div class="cartoon-card p-5 flex flex-col gap-3">
+                <div class="flex justify-between items-center border-b-2 border-purple-800/80 pb-2">
+                    <h3 class="text-sm font-fun font-bold text-yellow-300 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i> Bảng Vàng Kết Quả Lật Mở
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="copyHistory()" class="text-xs text-cyan-300 hover:text-cyan-200 font-bold bg-cyan-950/60 border border-cyan-800 px-2.5 py-1 rounded-xl">
+                            <i class="fa-solid fa-copy"></i> Copy lịch sử
+                        </button>
+                        <button onclick="clearHistory()" class="text-xs text-rose-300 hover:text-rose-200 font-bold bg-rose-950/60 border border-rose-800 px-2.5 py-1 rounded-xl">
+                            <i class="fa-solid fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+
+                <div id="historyList" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                    <p class="text-xs text-purple-400 text-center py-4 italic">Chưa có kết quả quay. Hãy bấm Quay Ngay!</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- POPUP MODAL 1: NICKNAME EDITOR MODAL -->
+    <div id="nicknameModal" class="fixed inset-0 z-50 bg-purple-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="cartoon-card bg-gradient-to-b from-purple-900 to-indigo-950 p-6 sm:p-8 max-w-xl w-full border-4 border-pink-400 shadow-cartoon-lg flex flex-col gap-5 relative animate-bounce-short">
+            
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b-2 border-purple-700/80 pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🎭</span>
+                    <div>
+                        <h3 class="text-xl font-fun font-black text-yellow-300">Cấu Hình Biệt Danh Bí Ẩn</h3>
+                        <p class="text-xs text-purple-200">Gán biệt danh hài hước cho từng học sinh</p>
+                    </div>
+                </div>
+                <button onclick="closeNicknameModal()" class="text-purple-300 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Tab Switcher inside Modal -->
+            <div class="flex gap-2 bg-purple-950 p-1 rounded-2xl border border-purple-800">
+                <button onclick="switchNicknameTab('syntax')" id="tabSyntaxBtn" class="flex-1 py-2 rounded-xl text-xs font-bold bg-pink-500 text-white">
+                    Nhập Cú Pháp (Tên | Biệt danh)
+                </button>
+                <button onclick="switchNicknameTab('auto')" id="tabAutoBtn" class="flex-1 py-2 rounded-xl text-xs font-bold text-purple-300 hover:text-white">
+                    Ghép Tự Động Danh Sách
+                </button>
+            </div>
+
+            <!-- TAB 1: SYNTAX TEXTAREA -->
+            <div id="tabSyntaxContent" class="flex flex-col gap-2">
+                <p class="text-xs text-purple-200">Nhập danh sách theo chuẩn: <strong class="text-yellow-300">Tên Thật | Biệt Danh</strong> (mỗi em 1 dòng)</p>
+                <textarea id="modalSyntaxInput" rows="7" placeholder="Ví dụ:&#10;Nguyễn Văn An | ⚡ Chiến Thần Tốc Độ&#10;Trần Thị Bình | 👑 Trùm Cuối Lớp&#10;Lê Hoàng Cường | 🐉 Rồng Lửa Bí Ẩn" class="w-full bg-purple-950 border-2 border-purple-600 rounded-2xl p-3 text-xs font-semibold text-yellow-100 placeholder-purple-400/60 focus:outline-none focus:border-yellow-400 resize-none"></textarea>
+            </div>
+
+            <!-- TAB 2: AUTO MATCH NICKNAMES -->
+            <div id="tabAutoContent" class="hidden flex flex-col gap-3">
+                <p class="text-xs text-purple-200">Dán danh sách Biệt Danh bên dưới, hệ thống sẽ tự động ghép lần lượt với Tên Thật đã có!</p>
+                <textarea id="modalAutoNicknames" rows="5" placeholder="Nhập danh sách biệt danh (mỗi biệt danh một dòng)...&#10;🔥 Chiến Thần Bài Cũ&#10;⭐ Ngôi Sao Tri Thức&#10;🦄 Đạo Sĩ Siêu Cấp" class="w-full bg-purple-950 border-2 border-purple-600 rounded-2xl p-3 text-xs font-semibold text-pink-200 placeholder-purple-400/60 focus:outline-none focus:border-pink-400 resize-none"></textarea>
+                <button onclick="applyAutoNicknames()" class="cartoon-btn py-2 bg-cyan-500 hover:bg-cyan-400 text-purple-950 font-bold text-xs rounded-xl border-2 border-cyan-200">
+                    ⚡ Ghép Ngay Với Danh Sách Tên Thật
+                </button>
+            </div>
+
+            <!-- Modal Footer Buttons -->
+            <div class="flex gap-3 justify-end pt-2 border-t-2 border-purple-800">
+                <button onclick="saveAndCloseNicknameModal()" class="cartoon-btn px-6 py-2.5 bg-yellow-400 hover:bg-yellow-300 text-purple-950 font-fun font-bold text-sm rounded-2xl border-2 border-yellow-200">
+                    💾 Lưu & Đóng Bảng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MODAL 2: CELEBRATION & REVEAL WINNER MODAL -->
+    <div id="winnerModal" class="fixed inset-0 z-50 bg-purple-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="cartoon-card bg-gradient-to-b from-purple-900 to-indigo-950 p-6 sm:p-8 max-w-lg w-full text-center border-4 border-yellow-400 shadow-cartoon-lg flex flex-col items-center gap-5 relative animate-bounce-short">
+            
+            <div class="text-6xl animate-bounce">🎭</div>
+            
+            <div>
+                <span class="bg-yellow-400 text-purple-950 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
+                    BIỆT DANH TRÚNG THƯỞNG
+                </span>
+                <h3 class="text-2xl sm:text-3xl font-fun font-black text-yellow-300 mt-2">CLICK ĐỂ LẬT MỞ TÊN THẬT! 🔍</h3>
+            </div>
+
+            <!-- Winners Render Box -->
+            <div id="modalWinnersBox" class="w-full flex flex-col gap-3 max-h-64 overflow-y-auto my-1 p-2">
+                <!-- Dynamically filled with cute badges -->
+            </div>
+
+            <div class="flex gap-3 w-full">
+                <button onclick="revealAllWinners()" class="cartoon-btn flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-purple-950 font-fun font-extrabold text-xs rounded-2xl border-2 border-cyan-200">
+                    ✨ Lật Mở Tất Cả Tên Thật
+                </button>
+                <button onclick="closeModalAndReSpin()" class="cartoon-btn flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-fun font-bold text-xs rounded-2xl border-2 border-pink-300">
+                    🔄 Quay Tiếp
+                </button>
+                <button onclick="closeWinnerModal()" class="cartoon-btn py-3 px-4 bg-slate-700 hover:bg-slate-600 text-slate-200 font-fun font-bold text-xs rounded-2xl border-2 border-slate-500">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio & Script Engine -->
+    <script>
+        // Data Structure: Array of Objects { name: "Tên Thật", nick: "Biệt Danh" }
+        let studentData = [];
+        let pickCount = 1;
+        let currentMode = 'wheel'; // 'wheel', 'cards', 'slot'
+        let isSpinning = false;
+        let soundEnabled = true;
+        let historyData = [];
+
+        // Random Nickname Generator fallback
+        const defaultNicknames = [
+            "⚡ Chiến Thần Tốc Độ", "👑 Trùm Cuối Lớp", "🔥 Thánh May Mắn", 
+            "🚀 Cao Thủ Ẩn Danh", "🎯 Sát Thủ Bài Cũ", "⭐ Ngôi Sao Tri Thức",
+            "🌈 Thần Đồng Tiềm Năng", "🦄 Đại Sứ Nụ Cười", "🎓 Học Bá Tương Lai",
+            "🐉 Rồng Lửa Bí Ẩn", "🐯 Mãnh Hổ Lớp Học", "🔮 Phù Thủy Học Tập"
+        ];
+
+        // Color Palette for Wheel Slices
+        const wheelColors = [
+            '#FF4785', '#06B6D4', '#10B981', '#FFC700', 
+            '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'
+        ];
+
+        // Presets with real names and cute nicknames
+        const presets = {
+            funnyClass: [
+                "Nguyễn Văn An | ⚡ Chiến Thần Tốc Độ",
+                "Trần Thị Bình | 👑 Trùm Cuối Lớp",
+                "Lê Hoàng Cường | 🐉 Rồng Lửa Bí Ẩn",
+                "Phạm Minh Đức | 🔥 Thánh May Mắn",
+                "Đỗ Quang Em | 🚀 Cao Thủ Ẩn Danh",
+                "Vũ Thanh Giang | 🎯 Sát Thủ Bài Cũ",
+                "Bùi Đức Hải | ⭐ Ngôi Sao Tri Thức",
+                "Hoàng Thùy Linh | 🦄 Đại Sứ Nụ Cười",
+                "Ngô Bảo Châu | 🎓 Học Bá Tương Lai",
+                "Đinh Tiến Dũng | 🔮 Phù Thủy Tin Học",
+                "Lý Hải Nam | 🐯 Mãnh Hổ Lớp 10A",
+                "Mai Phương Thảo | 🌸 Công Chúa Đội Đội"
+            ],
+            superheroes: [
+                "Nguyễn Anh Tuấn | 🦸 Spider-Man Siêu Quậy",
+                "Trần Bảo Nam | 🦇 Batman Đêm Khuya",
+                "Lê Minh Khoa | ⚡ Iron-Man Tri Thức",
+                "Phạm Gia Hưng | 🛡️ Captain Lớp Trưởng",
+                "Đặng Quốc Bảo | 🔨 Thor Sấm Sét",
+                "Vũ Hoàng Long | 🟢 Hulk Siêu Sức Mạnh"
+            ],
+            animals: [
+                "Bùi Khánh Vy | 🦊 Cáo Nhỏ Thông Minh",
+                "Nguyễn Thùy Chi | 🐼 Gấu Trúc Đáng Yêu",
+                "Đỗ Minh Trí | 🦁 Sư Tử Dũng Cảm",
+                "Hoàng Đức Anh | 🦅 Đại Bàng Tung Cánh",
+                "Lê Thu Trang | 🐰 Thỏ Bông Nhanh Nhẹn"
+            ]
+        };
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadPreset('funnyClass');
+            drawWheel();
+        });
+
+        // Parse Input text -> studentData array
+        function onInputChanged() {
+            const text = document.getElementById('studentInput').value;
+            const lines = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            studentData = lines.map((line, idx) => {
+                if(line.includes('|')) {
+                    const parts = line.split('|');
+                    return {
+                        name: parts[0].trim(),
+                        nick: parts[1].trim() || getRandomDefaultNick(idx)
+                    };
+                } else {
+                    return {
+                        name: line,
+                        nick: getRandomDefaultNick(idx)
+                    };
+                }
+            });
+
+            document.getElementById('studentCountBadge').textContent = studentData.length;
+            
+            // Count custom nicknames
+            const countWithNick = studentData.filter(s => s.nick).length;
+            document.getElementById('nicknameStats').textContent = `Đã có ${countWithNick} biệt danh`;
+
+            if(currentMode === 'wheel') drawWheel();
+            if(currentMode === 'cards') renderCardPlaceholders();
+            if(currentMode === 'slot') renderSlotPlaceholders();
+        }
+
+        function getRandomDefaultNick(idx) {
+            return defaultNicknames[idx % defaultNicknames.length];
+        }
+
+        function loadPreset(key) {
+            if(presets[key]) {
+                document.getElementById('studentInput').value = presets[key].join('\n');
+                onInputChanged();
+            }
+        }
+
+        function clearStudents() {
+            document.getElementById('studentInput').value = '';
+            onInputChanged();
+        }
+
+        function shuffleStudents() {
+            if(studentData.length < 2) return;
+            for (let i = studentData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [studentData[i], studentData[j]] = [studentData[j], studentData[i]];
+            }
+            // Reconstruct text
+            document.getElementById('studentInput').value = studentData.map(s => `${s.name} | ${s.nick}`).join('\n');
+            onInputChanged();
+        }
+
+        function setPickCount(count) {
+            pickCount = count;
+            document.getElementById('customPickInput').value = '';
+            updatePickUI(count);
+        }
+
+        function setCustomPick(val) {
+            const num = parseInt(val);
+            if(num > 0) {
+                pickCount = num;
+                updatePickUI(num, true);
+            }
+        }
+
+        function updatePickUI(count, isCustom = false) {
+            document.getElementById('pickDisplayBadge').textContent = `${count} người`;
+            [1, 2, 3].forEach(i => {
+                const btn = document.getElementById(`pickBtn${i}`);
+                if(!isCustom && i === count) {
+                    btn.className = "cartoon-btn py-2 rounded-xl font-black text-sm bg-yellow-400 text-purple-950 border-2 border-yellow-200";
+                } else {
+                    btn.className = "cartoon-btn py-2 rounded-xl font-black text-sm bg-purple-800 text-purple-200 border-2 border-purple-600";
+                }
+            });
+        }
+
+        // MODAL NICKNAME CONTROLS
+        function openNicknameModal() {
+            document.getElementById('modalSyntaxInput').value = document.getElementById('studentInput').value;
+            document.getElementById('nicknameModal').classList.remove('hidden');
+        }
+
+        function closeNicknameModal() {
+            document.getElementById('nicknameModal').classList.add('hidden');
+        }
+
+        function saveAndCloseNicknameModal() {
+            document.getElementById('studentInput').value = document.getElementById('modalSyntaxInput').value;
+            onInputChanged();
+            closeNicknameModal();
+        }
+
+        function switchNicknameTab(tab) {
+            const btnSyntax = document.getElementById('tabSyntaxBtn');
+            const btnAuto = document.getElementById('tabAutoBtn');
+            const contentSyntax = document.getElementById('tabSyntaxContent');
+            const contentAuto = document.getElementById('tabAutoContent');
+
+            if(tab === 'syntax') {
+                btnSyntax.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-pink-500 text-white";
+                btnAuto.className = "flex-1 py-2 rounded-xl text-xs font-bold text-purple-300 hover:text-white";
+                contentSyntax.classList.remove('hidden');
+                contentAuto.classList.add('hidden');
+            } else {
+                btnAuto.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-pink-500 text-white";
+                btnSyntax.className = "flex-1 py-2 rounded-xl text-xs font-bold text-purple-300 hover:text-white";
+                contentAuto.classList.remove('hidden');
+                contentSyntax.classList.add('hidden');
+            }
+        }
+
+        function applyAutoNicknames() {
+            const nickText = document.getElementById('modalAutoNicknames').value;
+            const nicks = nickText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            if(nicks.length === 0) {
+                alert("Vui lòng nhập danh sách biệt danh!");
+                return;
+            }
+
+            const currentLines = document.getElementById('modalSyntaxInput').value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            
+            const newLines = currentLines.map((line, idx) => {
+                let name = line;
+                if(line.includes('|')) name = line.split('|')[0].trim();
+                const assignedNick = nicks[idx % nicks.length];
+                return `${name} | ${assignedNick}`;
+            });
+
+            document.getElementById('modalSyntaxInput').value = newLines.join('\n');
+            switchNicknameTab('syntax');
+            alert(`Đã tự động ghép ${nicks.length} biệt danh vào danh sách học sinh!`);
+        }
+
+        // MODE SWITCHER
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('wheelContainer').classList.add('hidden');
+            document.getElementById('cardsContainer').classList.add('hidden');
+            document.getElementById('slotContainer').classList.add('hidden');
+
+            const btnWheel = document.getElementById('modeWheelBtn');
+            const btnCards = document.getElementById('modeCardsBtn');
+            const btnSlot = document.getElementById('modeSlotBtn');
+
+            [btnWheel, btnCards, btnSlot].forEach(b => {
+                b.className = "cartoon-btn bg-purple-900 text-purple-300 border-2 border-purple-700 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs";
+            });
+
+            if(mode === 'wheel') {
+                document.getElementById('wheelContainer').classList.remove('hidden');
+                btnWheel.className = "cartoon-btn bg-yellow-400 text-purple-950 border-2 border-yellow-200 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs";
+                drawWheel();
+            } else if(mode === 'cards') {
+                document.getElementById('cardsContainer').classList.remove('hidden');
+                btnCards.className = "cartoon-btn bg-yellow-400 text-purple-950 border-2 border-yellow-200 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs";
+                renderCardPlaceholders();
+            } else if(mode === 'slot') {
+                document.getElementById('slotContainer').classList.remove('hidden');
+                btnSlot.className = "cartoon-btn bg-yellow-400 text-purple-950 border-2 border-yellow-200 py-2.5 rounded-2xl flex flex-col items-center gap-1 font-bold text-xs";
+                renderSlotPlaceholders();
+            }
+        }
+
+        // WEB AUDIO SYNTHESIZER
+        let audioCtx = null;
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundBtn');
+            const icon = document.getElementById('soundIcon');
+            if(soundEnabled) {
+                btn.className = "cartoon-btn bg-pink-500 hover:bg-pink-400 text-white font-extrabold px-3.5 py-2 rounded-2xl border-2 border-pink-300 text-sm flex items-center gap-2";
+                icon.className = "fa-solid fa-volume-high";
+            } else {
+                btn.className = "cartoon-btn bg-slate-700 text-slate-400 font-extrabold px-3.5 py-2 rounded-2xl border-2 border-slate-600 text-sm flex items-center gap-2";
+                icon.className = "fa-solid fa-volume-xmark";
+            }
+        }
+
+        function playSound(type) {
+            if(!soundEnabled) return;
+            try {
+                if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if(type === 'tick') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if(type === 'flip') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.12);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if(type === 'reveal') {
+                    // Magic reveal sound
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if(type === 'win') {
+                    const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        
+                        noteOsc.type = 'triangle';
+                        noteOsc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        noteGain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                        noteOsc.start(now + idx * 0.08);
+                        noteOsc.stop(now + idx * 0.08 + 0.3);
+                    });
+                }
+            } catch(e){}
+        }
+
+        // DRAW WHEEL (DISPLAYS ONLY NICKNAMES!)
+        let currentWheelAngle = 0;
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = width / 2 - 10;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if(studentData.length === 0) {
+                ctx.fillStyle = "#3b1e70";
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = "#a855f7";
+                ctx.font = "bold 16px Nunito";
+                ctx.textAlign = "center";
+                ctx.fillText("Chưa có danh sách!", centerX, centerY);
+                return;
+            }
+
+            const sliceAngle = (2 * Math.PI) / studentData.length;
+
+            for(let i = 0; i < studentData.length; i++) {
+                const angle = currentWheelAngle + i * sliceAngle;
+                
+                // Slice arc
+                ctx.beginPath();
+                ctx.fillStyle = wheelColors[i % wheelColors.length];
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                // Slice border line
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Text: SHOWS ONLY NICKNAME!
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 12px Fredoka";
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 4;
+                
+                let nickText = studentData[i].nick;
+                if(nickText.length > 15) nickText = nickText.substring(0, 13) + "..";
+                ctx.fillText(nickText, radius - 15, 5);
+                ctx.restore();
+            }
+
+            // Center Wheel Cap
+            ctx.beginPath();
+            ctx.fillStyle = "#26164c";
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = "#FFC700";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = "#FFC700";
+            ctx.font = "18px Fredoka";
+            ctx.textAlign = "center";
+            ctx.fillText("🎭", centerX, centerY + 6);
+        }
+
+        // CARDS MODE PLACEHOLDERS
+        function renderCardPlaceholders() {
+            const container = document.getElementById('cardsContainer');
+            container.innerHTML = '';
+            const count = Math.min(pickCount, Math.max(1, studentData.length));
+
+            for(let i = 0; i < count; i++) {
+                const card = document.createElement('div');
+                card.className = "w-36 h-48 perspective-1000 cursor-pointer";
+                card.innerHTML = `
+                    <div id="cardInner_${i}" class="w-full h-full transform-style-3d transition-transform duration-700 relative">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-pink-600 to-purple-600 rounded-2xl border-4 border-yellow-300 shadow-cartoon flex flex-col items-center justify-center p-3 text-center backface-hidden">
+                            <span class="text-4xl">🎁</span>
+                            <span class="text-xs font-fun font-bold text-yellow-200 mt-2">Thẻ Biệt Danh #${i+1}</span>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400 to-amber-500 rounded-2xl border-4 border-white shadow-cartoon flex flex-col items-center justify-center p-3 text-center backface-hidden rotate-y-180">
+                            <span class="text-2xl">🎭</span>
+                            <span id="cardNick_${i}" class="text-xs font-black text-purple-950 mt-1">...</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        // SLOT MODE PLACEHOLDERS
+        function renderSlotPlaceholders() {
+            const container = document.getElementById('slotReels');
+            container.innerHTML = '';
+            const count = Math.min(pickCount, Math.max(1, studentData.length));
+
+            for(let i = 0; i < count; i++) {
+                const slot = document.createElement('div');
+                slot.className = "cartoon-card bg-purple-950 border-4 border-yellow-400 p-4 w-44 text-center flex flex-col items-center shadow-cartoon";
+                slot.innerHTML = `
+                    <span class="text-xs font-bold text-yellow-300 mb-1">BIỆT DANH #${i+1}</span>
+                    <div id="slotBox_${i}" class="w-full py-4 bg-purple-900 border-2 border-purple-700 rounded-xl font-black text-sm text-yellow-300 tracking-wide px-1">
+                        🎭 🎭 🎭
+                    </div>
+                `;
+                container.appendChild(slot);
+            }
+        }
+
+        // MAIN PICKER ROUTER
+        function startPicker() {
+            if(studentData.length === 0) {
+                alert("Vui lòng nhập danh sách học sinh!");
+                return;
+            }
+            if(isSpinning) return;
+            isSpinning = true;
+
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const actualPickCount = Math.min(pickCount, studentData.length);
+
+            if(currentMode === 'wheel') spinWheelMode(actualPickCount);
+            else if(currentMode === 'cards') flipCardsMode(actualPickCount);
+            else if(currentMode === 'slot') slotMachineMode(actualPickCount);
+        }
+
+        // MODE 1: SPIN WHEEL
+        function spinWheelMode(count) {
+            let totalSpinTime = 3500;
+            let start = null;
+            let initialAngle = currentWheelAngle;
+            let targetAngle = initialAngle + (Math.PI * 2 * 6) + Math.random() * Math.PI * 2;
+            let lastTickAngle = initialAngle;
+
+            function animate(timestamp) {
+                if(!start) start = timestamp;
+                let elapsed = timestamp - start;
+                let progress = elapsed / totalSpinTime;
+
+                let easeOut = 1 - Math.pow(1 - progress, 3);
+                currentWheelAngle = initialAngle + (targetAngle - initialAngle) * easeOut;
+
+                if(currentWheelAngle - lastTickAngle > (Math.PI * 2 / studentData.length)) {
+                    playSound('tick');
+                    lastTickAngle = currentWheelAngle;
+                }
+
+                drawWheel();
+
+                if(progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    const winners = pickRandomWinners(count);
+                    finishSpin(winners);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // MODE 2: FLIP CARDS
+        function flipCardsMode(count) {
+            renderCardPlaceholders();
+            const winners = pickRandomWinners(count);
+
+            winners.forEach((winner, index) => {
+                setTimeout(() => {
+                    const cardInner = document.getElementById(`cardInner_${index}`);
+                    const cardNick = document.getElementById(`cardNick_${index}`);
+                    if(cardInner && cardNick) {
+                        cardNick.textContent = winner.nick;
+                        cardInner.classList.add('rotate-y-180');
+                        playSound('flip');
+                    }
+                }, (index + 1) * 600);
+            });
+
+            setTimeout(() => {
+                finishSpin(winners);
+            }, (count + 1) * 600);
+        }
+
+        // MODE 3: SLOT MACHINE
+        function slotMachineMode(count) {
+            renderSlotPlaceholders();
+            const winners = pickRandomWinners(count);
+
+            for(let i = 0; i < count; i++) {
+                const box = document.getElementById(`slotBox_${i}`);
+                box.classList.add('slot-spinning');
+                
+                let interval = setInterval(() => {
+                    const randomItem = studentData[Math.floor(Math.random() * studentData.length)];
+                    box.textContent = randomItem.nick;
+                    playSound('tick');
+                }, 80);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    box.classList.remove('slot-spinning');
+                    box.textContent = winners[i].nick;
+                    box.className = "w-full py-4 bg-yellow-400 border-2 border-yellow-200 rounded-xl font-black text-sm text-purple-950 tracking-wide px-1 animate-bounce-short";
+                }, 1500 + i * 500);
+            }
+
+            setTimeout(() => {
+                finishSpin(winners);
+            }, 1500 + count * 500 + 200);
+        }
+
+        // PICK WINNERS CORE
+        function pickRandomWinners(count) {
+            let pool = [...studentData];
+            let picked = [];
+            for(let i = 0; i < count; i++) {
+                if(pool.length === 0) break;
+                const idx = Math.floor(Math.random() * pool.length);
+                picked.push(pool[idx]);
+                pool.splice(idx, 1);
+            }
+            return picked;
+        }
+
+        // FINISH SPIN
+        function finishSpin(winners) {
+            playSound('win');
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+
+            // Auto Remove
+            if(document.getElementById('removeCheckbox').checked) {
+                winners.forEach(w => {
+                    const idx = studentData.findIndex(s => s.name === w.name && s.nick === w.nick);
+                    if(idx > -1) studentData.splice(idx, 1);
+                });
+                document.getElementById('studentInput').value = studentData.map(s => `${s.name} | ${s.nick}`).join('\n');
+                document.getElementById('studentCountBadge').textContent = studentData.length;
+            }
+
+            // Save History
+            addHistory(winners);
+
+            // Open Winner Modal
+            showWinnerModal(winners);
+
+            isSpinning = false;
+            const btn = document.getElementById('spinBtn');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // WINNER MODAL WITH REVEAL RESTRUCTURE
+        function showWinnerModal(winners) {
+            const modalBox = document.getElementById('modalWinnersBox');
+            modalBox.innerHTML = '';
+
+            winners.forEach((w, i) => {
+                const card = document.createElement('div');
+                card.id = `winnerCard_${i}`;
+                card.className = "bg-purple-950/90 border-3 border-yellow-400 p-4 rounded-2xl flex flex-col gap-2 cursor-pointer transition-all hover:scale-[1.02] shadow-cartoon-sm";
+                card.onclick = () => revealSingleWinner(i);
+
+                card.innerHTML = `
+                    <!-- Secret State (Before Click) -->
+                    <div id="secretBox_${i}" class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-yellow-400 text-purple-950 font-black flex items-center justify-center text-xs">#${i+1}</span>
+                            <div class="text-left">
+                                <span class="text-xs font-bold text-pink-300 block">Biệt Danh Bí Ẩn:</span>
+                                <span class="text-lg font-black text-yellow-300">${w.nick}</span>
+                            </div>
+                        </div>
+                        <div class="bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-pink-300 flex items-center gap-1 animate-pulse">
+                            🔍 Click lật tên thật!
+                        </div>
+                    </div>
+
+                    <!-- Revealed Real Name State (Hidden at first) -->
+                    <div id="revealedBox_${i}" class="hidden flex items-center justify-between border-t-2 border-dashed border-cyan-500/50 pt-2 mt-1 text-left animate-bounce-short">
+                        <div>
+                            <span class="text-xs font-bold text-cyan-300 block">Tên Thật Học Sinh:</span>
+                            <span class="text-xl font-fun font-black text-white">${w.name}</span>
+                        </div>
+                        <span class="text-3xl">🎉</span>
+                    </div>
+                `;
+                modalBox.appendChild(card);
+            });
+
+            document.getElementById('winnerModal').classList.remove('hidden');
+        }
+
+        function revealSingleWinner(index) {
+            const secret = document.getElementById(`secretBox_${index}`);
+            const revealed = document.getElementById(`revealedBox_${index}`);
+            const card = document.getElementById(`winnerCard_${index}`);
+
+            if(revealed && revealed.classList.contains('hidden')) {
+                revealed.classList.remove('hidden');
+                card.className = "bg-gradient-to-r from-purple-900 to-indigo-900 border-3 border-cyan-400 p-4 rounded-2xl flex flex-col gap-2 shadow-cartoon-sm";
+                playSound('reveal');
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+            }
+        }
+
+        function revealAllWinners() {
+            const count = document.getElementById('modalWinnersBox').children.length;
+            for(let i = 0; i < count; i++) {
+                revealSingleWinner(i);
+            }
+        }
+
+        function closeWinnerModal() {
+            document.getElementById('winnerModal').classList.add('hidden');
+        }
+
+        function closeModalAndReSpin() {
+            closeWinnerModal();
+            setTimeout(() => startPicker(), 300);
+        }
+
+        // HISTORY MANAGEMENT
+        function addHistory(winners) {
+            const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            historyData.unshift({ time, winners });
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if(historyData.length === 0) {
+                container.innerHTML = `<p class="text-xs text-purple-400 text-center py-4 italic">Chưa có kết quả quay. Hãy bấm Quay Ngay!</p>`;
+                return;
+            }
+
+            let html = '';
+            historyData.forEach((item, idx) => {
+                html += `
+                    <div class="bg-purple-950/60 p-2.5 rounded-xl border border-purple-800 flex items-center justify-between text-xs">
+                        <span class="text-purple-400 font-bold">${item.time}</span>
+                        <div class="flex flex-wrap gap-1 justify-end">
+                            ${item.winners.map(w => `<span class="bg-pink-500/30 text-pink-200 border border-pink-500/50 px-2 py-0.5 rounded-lg font-extrabold" title="Tên thật: ${w.name}">${w.nick} (${w.name})</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function clearHistory() {
+            historyData = [];
+            renderHistory();
+        }
+
+        function copyHistory() {
+            if(historyData.length === 0) return;
+            const text = historyData.map(h => `[${h.time}] ` + h.winners.map(w => `${w.nick} (${w.name})`).join(', ')).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã sao chép lịch sử kết quả!");
+            }).catch(() => {
+                alert(text);
+            });
+        }
+    </script>
+</body>
+</html>
