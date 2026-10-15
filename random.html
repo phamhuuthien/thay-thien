@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Picker Pro - Quay số ngẫu nhiên sống động</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-input {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        @keyframes slotRoll {
+            0% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-10px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+        .rolling-item {
+            animation: slotRoll 0.15s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-full text-slate-100 flex flex-col selection:bg-purple-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="py-6 px-6 glass-panel border-b border-white/10 sticky top-0 z-50 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-500/30 text-white text-2xl font-bold animate-pulse-slow">
+                    <i class="fa-solid fa-dice"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-purple-200 to-pink-300 bg-clip-text text-transparent">Random Picker Pro</h1>
+                    <p class="text-xs text-slate-400">Ứng dụng quay số ngẫu nhiên thông minh & sống động</p>
+                    <p class="text-xs text-slate-400">Được phát triển bởi Phạm Hữu Thiện</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="badgeCount" class="px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-users"></i> Sẵn sàng: <strong id="totalCount" class="text-white">0</strong> người
+                </span>
+                <button onclick="openPresetsModal()" class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-medium transition-all shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-pink-400"></i> Mẫu sẵn
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Panel: Input & Settings -->
+        <section class="lg:col-span-5 glass-panel rounded-3xl p-6 shadow-2xl flex flex-col gap-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-list-ul text-purple-400"></i> Danh sách tham gia
+                </h2>
+                <div class="flex gap-2">
+                    <button onclick="clearList()" title="Xóa tất cả" class="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 flex items-center justify-center transition-all text-xs border border-rose-500/30">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <button onclick="shuffleList()" title="Trộn danh sách" class="w-8 h-8 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 flex items-center justify-center transition-all text-xs border border-indigo-500/30">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input area -->
+            <div class="flex flex-col gap-2">
+                <label for="nameInput" class="text-xs font-medium text-slate-300">Nhập tên (mỗi tên một dòng hoặc cách nhau bằng dấu phẩy):</label>
+                <textarea id="nameInput" rows="6" placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C..." class="glass-input w-full rounded-2xl p-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none custom-scrollbar shadow-inner"></textarea>
+                <div class="flex justify-between items-center text-xs text-slate-400 px-1">
+                    <span id="inputStatus">Đã nhập hợp lệ</span>
+                    <button onclick="updateListFromInput()" class="text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-2">Cập nhật ngay</button>
+                </div>
+            </div>
+
+            <!-- Configuration Group -->
+            <div class="flex flex-col gap-4 pt-2 border-t border-white/10">
+                <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-pink-400"></i> Thiết lập quay số
+                </h3>
+                
+                <!-- Pick Count Selection -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between text-xs text-slate-300">
+                        <span>Số lượng chọn cùng lúc (N):</span>
+                        <span id="pickCountDisplay" class="font-bold text-purple-400">1 người</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setPickCount(1)" id="btnPick1" class="py-2.5 rounded-xl font-semibold text-sm transition-all border bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-600/30">1</button>
+                        <button onclick="setPickCount(2)" id="btnPick2" class="py-2.5 rounded-xl font-semibold text-sm transition-all border bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700">2</button>
+                        <button onclick="setPickCount(3)" id="btnPick3" class="py-2.5 rounded-xl font-semibold text-sm transition-all border bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700">3</button>
+                        <div class="relative">
+                            <input type="number" id="customPickCount" min="1" max="50" value="1" oninput="setCustomPickCount(this.value)" class="w-full h-full text-center rounded-xl glass-input text-sm text-white font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Khác">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options checkboxes -->
+                <div class="flex flex-col gap-2.5 pt-1">
+                    <label class="flex items-center gap-3 cursor-pointer text-xs text-slate-300 select-none">
+                        <input type="checkbox" id="removeSelected" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-purple-500">
+                        <span>Tự động loại bỏ người đã trúng ra khỏi danh sách</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer text-xs text-slate-300 select-none">
+                        <input type="checkbox" id="soundEnabled" checked class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-purple-600 focus:ring-purple-500">
+                        <span>Bật hiệu ứng âm thanh sống động (Web Audio API)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="startRolling()" id="rollButton" class="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:via-pink-500 hover:to-amber-400 text-white font-bold text-lg shadow-xl shadow-purple-600/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-3 group">
+                <i class="fa-solid fa-play text-xl group-hover:scale-110 transition-transform"></i> BẮT ĐẦU QUAY NGAY
+            </button>
+        </section>
+
+        <!-- Right Panel: Display Stage & Results -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- Stage Display Box -->
+            <div class="glass-panel rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center min-h-[360px] relative overflow-hidden border border-white/15">
+                <!-- Background decorative glowing blur -->
+                <div class="absolute -top-24 -left-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Status / Title above stage -->
+                <div class="absolute top-6 left-8 flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Sân khấu quay thưởng</span>
+                </div>
+
+                <!-- Main Display Container -->
+                <div id="stageContainer" class="w-full flex flex-wrap items-center justify-center gap-4 z-10 my-auto py-8">
+                    <!-- Default state banner -->
+                    <div id="stagePlaceholder" class="flex flex-col items-center justify-center text-center p-8">
+                        <div class="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-purple-400 text-3xl mb-4 shadow-inner">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Sẵn sàng quay số</h3>
+                        <p class="text-sm text-slate-400 max-w-sm">Nhập danh sách bên trái, chọn số lượng người cần lấy và nhấn nút "Bắt đầu quay ngay".</p>
+                    </div>
+                </div>
+
+                <!-- Winner Actions (shown after roll) -->
+                <div id="stageActions" class="hidden absolute bottom-6 z-20 flex gap-3">
+                    <button onclick="startRolling()" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/30 flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-rotate-right"></i> Quay tiếp
+                    </button>
+                    <button onclick="copyResults()" class="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold shadow-lg border border-slate-700 flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-copy"></i> Sao chép kết quả
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="glass-panel rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Lịch sử các lần quay
+                    </h3>
+                    <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1">
+                        <i class="fa-solid fa-trash"></i> Xóa lịch sử
+                    </button>
+                </div>
+                <div id="historyContainer" class="flex flex-col gap-2.5 max-h-56 overflow-y-auto custom-scrollbar pr-2">
+                    <p class="text-xs text-slate-500 text-center py-4 italic">Chưa có lịch sử quay nào trong phiên làm việc này.</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-xs text-slate-500 border-t border-white/5 mt-auto">
+        <p>Random Picker Pro &bull; Thiết kế giao diện sống động, trực quan cho mọi sự kiện  &bull; Phạm Hữu Thiện</p>
+    </footer>
+
+    <!-- Presets Modal -->
+    <div id="presetsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-white/20 flex flex-col gap-6 relative">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-pink-400"></i> Chọn danh sách mẫu có sẵn
+                </h3>
+                <button onclick="closePresetsModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="loadPreset('lucky')" class="p-4 rounded-2xl bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-left transition-all group flex flex-col gap-1">
+                    <span class="font-semibold text-sm text-white group-hover:text-purple-300">Quay trúng thưởng (Lucky Draw)</span>
+                    <span class="text-xs text-slate-400">Danh sách các thành viên dự tiệc cuối năm.</span>
+                </button>
+                <button onclick="loadPreset('team')" class="p-4 rounded-2xl bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-left transition-all group flex flex-col gap-1">
+                    <span class="font-semibold text-sm text-white group-hover:text-purple-300">Chia nhóm / Thuyết trình</span>
+                    <span class="text-xs text-slate-400">Danh sách tên sinh viên / nhân sự phòng ban.</span>
+                </button>
+                <button onclick="loadPreset('food')" class="p-4 rounded-2xl bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-left transition-all group flex flex-col gap-1">
+                    <span class="font-semibold text-sm text-white group-hover:text-purple-300">Hôm nay ăn gì?</span>
+                    <span class="text-xs text-slate-400">Phở, Cơm tấm, Bún bò, Pizza, Burger...</span>
+                </button>
+                <button onclick="loadPreset('questions')" class="p-4 rounded-2xl bg-white/5 hover:bg-purple-600/20 border border-white/10 hover:border-purple-500/50 text-left transition-all group flex flex-col gap-1">
+                    <span class="font-semibold text-sm text-white group-hover:text-purple-300">Câu hỏi / Thử thách</span>
+                    <span class="text-xs text-slate-400">Danh sách các câu hỏi trắc nghiệm hoặc hình phạt.</span>
+                </button>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closePresetsModal()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 glass-panel bg-slate-900/90 border border-purple-500/40 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toastMessage" class="text-sm font-medium">Thông báo thành công</span>
+    </div>
+
+    <!-- JavaScript Logic & Sound Engine -->
+    <script>
+        let participants = [];
+        let historyList = [];
+        let currentPickCount = 1;
+        let isRolling = false;
+
+        // Default initial items
+        const defaultNames = [
+            "Nguyễn Văn An", "Trần Thị Bình", "Lê Hoàng Long", 
+            "Phạm Minh Thư", "Đỗ Quang Vinh", "Vũ Thanh Hằng", 
+            "Bùi Đức Mạnh", "Hoàng Thuỳ Linh", "Ngô Bảo Châu", "Đinh Tiến Hải"
+        ];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('nameInput');
+            textarea.value = defaultNames.join('\n');
+            updateListFromInput();
+        });
+
+        // Update participants list from textarea
+        function updateListFromInput() {
+            const rawText = document.getElementById('nameInput').value;
+            // Split by newline or comma
+            participants = rawText
+                .split(/[\n,]+/)
+                .map(item => item.trim())
+                .filter(item => item.length > 0);
+            
+            // Remove duplicates for cleaner roll if needed, or keep them. Let's keep unique or all based on user input.
+            document.getElementById('totalCount').textContent = participants.length;
+            
+            const statusEl = document.getElementById('inputStatus');
+            statusEl.textContent = `Đã nhận ${participants.length} mục hợp lệ`;
+            statusEl.className = "text-xs font-semibold text-emerald-400";
+            setTimeout(() => {
+                statusEl.className = "text-xs text-slate-400";
+            }, 2000);
+        }
+
+        // Set Pick Count buttons
+        function setPickCount(count) {
+            currentPickCount = count;
+            document.getElementById('customPickCount').value = count;
+            document.getElementById('pickCountDisplay').textContent = `${count} người`;
+            
+            // Highlight buttons
+            [1, 2, 3].forEach(i => {
+                const btn = document.getElementById(`btnPick${i}`);
+                if(i === count) {
+                    btn.className = "py-2.5 rounded-xl font-semibold text-sm transition-all border bg-purple-600 text-white border-purple-500 shadow-lg shadow-purple-600/30";
+                } else {
+                    btn.className = "py-2.5 rounded-xl font-semibold text-sm transition-all border bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700";
+                }
+            });
+        }
+
+        function setCustomPickCount(val) {
+            const num = parseInt(val);
+            if(num > 0) {
+                currentPickCount = num;
+                document.getElementById('pickCountDisplay').textContent = `${num} người`;
+                [1, 2, 3].forEach(i => {
+                    const btn = document.getElementById(`btnPick${i}`);
+                    btn.className = "py-2.5 rounded-xl font-semibold text-sm transition-all border bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700";
+                });
+            }
+        }
+
+        function clearList() {
+            document.getElementById('nameInput').value = '';
+            updateListFromInput();
+            showToast("Đã xóa toàn bộ danh sách!", "info");
+        }
+
+        function shuffleList() {
+            updateListFromInput();
+            if(participants.length === 0) return;
+            for (let i = participants.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [participants[i], participants[j]] = [participants[j], participants[i]];
+            }
+            document.getElementById('nameInput').value = participants.join('\n');
+            showToast("Đã trộn ngẫu nhiên danh sách!", "success");
+        }
+
+        // Web Audio API Sound Generator
+        let audioCtx = null;
+        function playSound(type) {
+            const soundEnabled = document.getElementById('soundEnabled').checked;
+            if(!soundEnabled) return;
+
+            try {
+                if(!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if(audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if(type === 'tick') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400 + Math.random() * 300, now);
+                    gainNode.gain.setValueAtTime(0.05, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if(type === 'win') {
+                    // Victory chime
+                    osc.type = 'sine';
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, index) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        
+                        noteOsc.frequency.setValueAtTime(freq, now + index * 0.1);
+                        noteGain.gain.setValueAtTime(0.15, now + index * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.4);
+                        
+                        noteOsc.start(now + index * 0.1);
+                        noteOsc.stop(now + index * 0.1 + 0.4);
+                    });
+                }
+            } catch(e) {
+                console.log("Audio not supported or blocked", e);
+            }
+        }
+
+        // Rolling & Selecting Logic
+        function startRolling() {
+            updateListFromInput();
+            if(participants.length === 0) {
+                showToast("Vui lòng nhập danh sách tham gia trước khi quay!", "error");
+                return;
+            }
+
+            const actualPickCount = Math.min(currentPickCount, participants.length);
+            if(actualPickCount <= 0) {
+                showToast("Số lượng chọn không hợp lệ!", "error");
+                return;
+            }
+
+            if(isRolling) return;
+            isRolling = true;
+
+            const rollButton = document.getElementById('rollButton');
+            rollButton.disabled = true;
+            rollButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const stageContainer = document.getElementById('stageContainer');
+            const stageActions = document.getElementById('stageActions');
+            stageActions.classList.add('hidden');
+
+            // Setup rolling slot cards in the stage
+            stageContainer.innerHTML = '';
+            let slotsHTML = '';
+            for(let i = 0; i < actualPickCount; i++) {
+                slotsHTML += `
+                    <div class="rolling-slot glass-panel bg-purple-950/40 border-purple-500/30 rounded-2xl p-6 min-w-[200px] flex flex-col items-center justify-center shadow-xl transform transition-all">
+                        <span class="text-xs uppercase font-semibold text-purple-400 mb-1">Kết quả #${i + 1}</span>
+                        <div class="slot-text text-2xl sm:text-3xl font-extrabold text-white tracking-wide py-2 rolling-item">...</div>
+                    </div>
+                `;
+            }
+            stageContainer.innerHTML = slotsHTML;
+
+            const slotElements = stageContainer.querySelectorAll('.slot-text');
+            let duration = 2500; // 2.5 seconds total roll
+            let startTime = performance.now();
+
+            function updateRoll(currentTime) {
+                let elapsed = currentTime - startTime;
+
+                if(elapsed < duration) {
+                    // Random shuffle display during roll
+                    slotElements.forEach(el => {
+                        const randomName = participants[Math.floor(Math.random() * participants.length)];
+                        el.textContent = randomName;
+                    });
+                    playSound('tick');
+                    
+                    // Slow down progressively or keep interval
+                    setTimeout(() => {
+                        requestAnimationFrame(updateRoll);
+                    }, 70 + (elapsed / duration) * 80); // slow down towards end
+                } else {
+                    // Final Selection phase without replacement in single roll
+                    let winners = [];
+                    let tempPool = [...participants];
+                    for(let i = 0; i < actualPickCount; i++) {
+                        const randomIndex = Math.floor(Math.random() * tempPool.length);
+                        winners.push(tempPool[randomIndex]);
+                        tempPool.splice(randomIndex, 1); // remove to avoid duplicate in same batch
+                    }
+
+                    // Render final winners with gorgeous animation
+                    stageContainer.innerHTML = '';
+                    winners.forEach((winner, index) => {
+                        const card = document.createElement('div');
+                        card.className = "glass-panel bg-gradient-to-br from-purple-900/60 to-pink-900/60 border-2 border-pink-500/50 rounded-2xl p-6 min-w-[220px] flex flex-col items-center justify-center shadow-2xl transform scale-95 animate-[bounce_0.5s_ease-in-out]";
+                        card.innerHTML = `
+                            <div class="w-8 h-8 rounded-full bg-pink-500/20 border border-pink-400 text-pink-300 flex items-center justify-center text-xs font-bold mb-2">#${index + 1}</div>
+                            <span class="text-xs uppercase font-semibold text-pink-300 tracking-wider mb-1">Đã trúng giải</span>
+                            <span class="text-xl sm:text-2xl font-extrabold text-white text-center drop-shadow">${escapeHtml(winner)}</span>
+                        `;
+                        stageContainer.appendChild(card);
+                    });
+
+                    playSound('win');
+                    triggerConfetti();
+
+                    // Add to history
+                    addHistory(winners);
+
+                    // If remove selected is checked
+                    if(document.getElementById('removeSelected').checked) {
+                        winners.forEach(w => {
+                            const idx = participants.indexOf(w);
+                            if(idx > -1) participants.splice(idx, 1);
+                        });
+                        document.getElementById('nameInput').value = participants.join('\n');
+                        document.getElementById('totalCount').textContent = participants.length;
+                    }
+
+                    stageActions.classList.remove('hidden');
+                    isRolling = false;
+                    rollButton.disabled = false;
+                    rollButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            requestAnimationFrame(updateRoll);
+        }
+
+        // Confetti effect
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // History Management
+        function addHistory(winners) {
+            const historyContainer = document.getElementById('historyContainer');
+            // Remove empty placeholder if present
+            if(historyList.length === 0) {
+                historyContainer.innerHTML = '';
+            }
+
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const historyItem = {
+                time: timeStr,
+                winners: winners
+            };
+            historyList.unshift(historyItem);
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const historyContainer = document.getElementById('historyContainer');
+            if(historyList.length === 0) {
+                historyContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-4 italic">Chưa có lịch sử quay nào trong phiên làm việc này.</p>`;
+                return;
+            }
+
+            let html = '';
+            historyList.forEach((item, idx) => {
+                html += `
+                    <div class="glass-panel bg-white/5 rounded-xl p-3 flex items-center justify-between gap-4 border border-white/5 text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 rounded bg-purple-500/20 text-purple-300 font-bold">#${historyList.length - idx}</span>
+                            <span class="text-slate-400">${item.time}</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 justify-end">
+                            ${item.winners.map(w => `<span class="px-2.5 py-1 rounded-lg bg-pink-500/20 border border-pink-500/30 font-semibold text-white">${escapeHtml(w)}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            historyContainer.innerHTML = html;
+        }
+
+        function clearHistory() {
+            historyList = [];
+            renderHistory();
+            showToast("Đã xóa lịch sử quay!", "info");
+        }
+
+        function copyResults() {
+            if(historyList.length === 0) return;
+            const latest = historyList[0];
+            const textToCopy = `Kết quả quay số (${latest.time}): ${latest.winners.join(', ')}`;
+            
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast("Đã sao chép kết quả vào bộ nhớ tạm!", "success");
+            } catch (err) {
+                showToast("Không thể sao chép!", "error");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Presets Modal Handler
+        function openPresetsModal() {
+            document.getElementById('presetsModal').classList.remove('hidden');
+        }
+        function closePresetsModal() {
+            document.getElementById('presetsModal').classList.add('hidden');
+        }
+
+        const presetsData = {
+            lucky: ["Nguyễn Văn An", "Trần Thị Bình", "Lê Hoàng Long", "Phạm Minh Thư", "Đỗ Quang Vinh", "Vũ Thanh Hằng", "Bùi Đức Mạnh", "Hoàng Thuỳ Linh", "Ngô Bảo Châu", "Đinh Tiến Hải", "Mai Văn Khôi", "Lý Hải Nam"],
+            team: ["Nhóm 1 - Đề tài 1", "Nhóm 2 - Đề tài 2", "Nhóm 3 - Đề tài 3", "Nhóm 4 - Đề tài 4", "Nhóm 5 - Đề tài 5", "Nhóm 6 - Đề tài 6", "Nhóm 7 - Đề tài 7", "Nhóm 8 - Đề tài 8"],
+            food: ["Phở bò Hà Nội", "Cơm tấm sườn bì", "Bún bò Huế", "Mì Ý sốt kem", "Gà rán Kentucky", "Lẩu thái chua cay", "Bánh mì kẹp thịt", "Sushi Nhật Bản", "Cơm gà Hải Nam"],
+            questions: ["Hát một bài hát bất kỳ", "Kể một câu chuyện cười", "Nhảy múa trong 30 giây", "Khen 3 người trong phòng", "Uống cạn 1 ly nước", "Trả lời câu hỏi khó từ khán giả", "Đóng giả một siêu anh hùng"]
+        };
+
+        function loadPreset(key) {
+            if(presetsData[key]) {
+                document.getElementById('nameInput').value = presetsData[key].join('\n');
+                updateListFromInput();
+                closePresetsModal();
+                showToast("Đã tải danh sách mẫu thành công!", "success");
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = message;
+            if(type === 'success') {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
+            } else if(type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400 text-lg";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-lg";
+            }
+
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
